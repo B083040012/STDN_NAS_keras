@@ -1,0 +1,36 @@
+file:
+  path: 'log\\'
+training:
+  # size of batch
+  batch_size: 64
+  # maximum epochs
+  max_epochs: 1000
+dataset: 
+  # num of time for attention (value Q in paper)
+  att_lstm_num: 3
+  # num of day for attention (value P in paper)
+  long_term_lstm_seq_num: 3
+  # length of short tern value
+  short_term_lstm_seq_num: 7
+  # neighbors for local cnn (2*cnn_nbhd_size+1) for area size
+  cnn_nbhd_size: 3
+  # for feature extraction
+  nbhd_size: 2
+  # dimension of local conv output
+  cnn_flat_size: 128
+  threshold: 10
+  volume_train_max: 299.0
+  volume_test_max: 307.0
+  flow_train_max: 35.0
+  flow_test_max: 35.0
+searching:
+  generation_num: 100
+  population_num: 15
+  annealing_ratio: 0.9
+  initial_tmp: 200
+  final_tmp: 1
+  crossover_rate: 0.8
+  annealing_prob: 1
+model:
+  num_choice: 3
+  num_layers: 6
