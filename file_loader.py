@@ -80,7 +80,11 @@ class STDN_fileloader:
         time_start = (hist_feature_daynum + att_lstm_num) * self.timeslot_daynum + long_term_lstm_seq_len
         time_end = data.shape[0]
 
-        time_range_list=[i for i in range(time_start, time_end)]
+        if datatype=='train':
+            time_range_list=sorted([hour+date*48 for hour in range(18, 35) for date in range(0,40)])
+        elif datatype=='test':
+            time_range_list=sorted([hour+date*48 for hour in range(18, 35) for date in range(0,20)])
+        # time_range_list=[i for i in range(time_start, time_end)]
         # time_range_list=sorted([hour+date*48-1 for hour in range(18, 35) for date in range(39,40)])
 
         if datatype=='validation':
