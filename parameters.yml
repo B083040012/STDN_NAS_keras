@@ -24,7 +24,7 @@ dataset:
   flow_train_max: 35.0
   flow_test_max: 35.0
 searching:
-  generation_num: 100
+  generation_num: 15
   population_num: 15
   annealing_ratio: 0.9
   initial_tmp: 200
