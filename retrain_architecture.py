@@ -92,28 +92,28 @@ def retrain_architecture(batch_size=64, max_epochs=100, validation_split=0.2, ea
     logging.info("[Retrained Architecture Weight Saved]")
     logging.info("[Retraining Architecture Phase End] : total time: {0} sec".format(end-start))
 
-    logging.info("[Architecture Testing Phase]")
-    logging.info("loading testing data...")
-    att_cnnx, att_flow, att_x, cnnx, flow, x, y = dataloader.sample_stdn(datatype="test", nbhd_size=nbhd_size,
-                                                                          cnn_nbhd_size=cnn_nbhd_size)
+    # logging.info("[Architecture Testing Phase]")
+    # logging.info("loading testing data...")
+    # att_cnnx, att_flow, att_x, cnnx, flow, x, y = dataloader.sample_stdn(datatype="test", nbhd_size=nbhd_size,
+    #                                                                       cnn_nbhd_size=cnn_nbhd_size)
 
-    test_data = [att_cnnx, att_flow, att_x, cnnx, flow, [x, ]]
-    test_label = y * config["dataset"]["volume_test_max"]
-    logging.info("test data loading complete")
+    # test_data = [att_cnnx, att_flow, att_x, cnnx, flow, [x, ]]
+    # test_label = y * config["dataset"]["volume_test_max"]
+    # logging.info("test data loading complete")
 
-    logging.info("evaluating start...")
-    test_pred = model.predict( x=test_data )
-    test_pred = test_pred * config["dataset"]["volume_test_max"]
+    # logging.info("evaluating start...")
+    # test_pred = model.predict( x=test_data )
+    # test_pred = test_pred * config["dataset"]["volume_test_max"]
 
-    threshold = float(config["dataset"]["threshold"]) / config["dataset"]["volume_train_max"]
-    print("Evaluating threshold: {0}.".format(threshold))
+    # threshold = float(config["dataset"]["threshold"]) / config["dataset"]["volume_train_max"]
+    # print("Evaluating threshold: {0}.".format(threshold))
 
-    total_loss_rmse, total_loss_mape = eval_together(test_label, test_pred, threshold)
-    (prmse, pmape), (drmse, dmape) = eval_lstm(test_label, test_pred, threshold)
-    logging.info("testing complete")
-    logging.info("[Testing Result] pickup rmse = {0}, pickup mape = {1}%\ndropoff rmse = {2}, dropoff mape = {3}%".format(prmse, pmape * 100, drmse, dmape * 100))
-    logging.info("[Testing Result] total_rmse = {0}, total_mape = {1}".format(total_loss_rmse, total_loss_mape * 100))
-    logging.info("[Architecture Testing Phase End]")
+    # total_loss_rmse, total_loss_mape = eval_together(test_label, test_pred, threshold)
+    # (prmse, pmape), (drmse, dmape) = eval_lstm(test_label, test_pred, threshold)
+    # logging.info("testing complete")
+    # logging.info("[Testing Result] pickup rmse = {0}, pickup mape = {1}%\ndropoff rmse = {2}, dropoff mape = {3}%".format(prmse, pmape * 100, drmse, dmape * 100))
+    # logging.info("[Testing Result] total_rmse = {0}, total_mape = {1}".format(total_loss_rmse, total_loss_mape * 100))
+    # logging.info("[Architecture Testing Phase End]")
 
 if __name__=='__main__':
     stop = CustomStopper(monitor='val_loss', min_delta=0, patience=5, verbose=0, mode='min', start_epoch=40)
