@@ -72,7 +72,7 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
     filepath=config["file"]["path"] + 'best_supernet_cpt'
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, \
                             save_best_only=True, save_weights_only=True, \
-                            mode='auto', save_frequency=1)
+                            mode='auto')
 
     logging.info("loading supernet...")
     tf.config.run_functions_eagerly(True)
