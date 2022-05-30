@@ -81,14 +81,15 @@ class STDN_fileloader:
         time_end = data.shape[0]
 
         if datatype=='train':
-            time_range_list=sorted([hour+date*48 for hour in range(18, 35) for date in range(0,40)])
+            time_range_list=sorted([hour+date*48 for hour in range(18, 35) for date in range(0,40) if hour+date*48 >= time_start])
         elif datatype=='test':
-            time_range_list=sorted([hour+date*48 for hour in range(18, 35) for date in range(0,20)])
+            time_range_list=sorted([hour+date*48 for hour in range(18, 35) for date in range(0,20) if hour+date*48 >= time_start])
         # time_range_list=[i for i in range(time_start, time_end)]
         # time_range_list=sorted([hour+date*48-1 for hour in range(18, 35) for date in range(39,40)])
 
-        if datatype=='validation':
-            time_range_list=sorted(random.sample(time_range_list, int(len(time_range_list)*0.2)))
+        elif datatype=='validation':
+            time_range_list=sorted([hour+date*48 for hour in range(18, 35) for date in range(0,40) if hour+date*48 >= time_start])
+            time_range_list=sorted(random.sample(time_range_list, int(len(time_range_list)*0.1)))
         # elif datatype == 'test':
         #     time_range_list = sorted([hour+date*48-1 for hour in range(18, 35) for date in range(19,20)])
         volume_type = data.shape[-1]
@@ -248,7 +249,6 @@ class STDN_fileloader:
 
                     #label
                     labels.append(data[t, x , y, :].flatten())
-
 
         output_cnn_att_features = []
         output_flow_att_features = []
