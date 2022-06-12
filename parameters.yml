@@ -4,7 +4,7 @@ training:
   # size of batch
   batch_size: 64
   # maximum epochs
-  max_epochs: 1000
+  max_epochs: 100
 dataset: 
   # num of time for attention (value Q in paper)
   att_lstm_num: 3
@@ -24,7 +24,7 @@ dataset:
   flow_train_max: 35.0
   flow_test_max: 35.0
 searching:
-  generation_num: 15
+  generation_num: 20
   population_num: 15
   annealing_ratio: 0.9
   initial_tmp: 200
