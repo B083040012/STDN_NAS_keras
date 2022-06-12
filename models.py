@@ -1,5 +1,5 @@
 import pickle
-from random import choice, random
+from random import choice, choices, random
 import numpy as np
 import json
 import tensorflow as tf
@@ -35,23 +35,28 @@ class STDN_NAS(keras.Model):
 
         self.level=3
         self.kernel_list=[1,2,3]
-        self.nbhd_channel=[64,64,64]
 
-        self.vol_flow_block=[]
-        self.choice_block=[]
-        for block_num in range(lstm_seq_len):
-            for level_num in range(self.level):
-                nbhd_oup=self.nbhd_channel[level_num]
-                flow_oup=self.nbhd_channel[level_num]
-                nbhd_block=[]
-                flow_block=[]
-                for kernel_size in self.kernel_list:
-                    nbhd_block.append(Conv2D(filters = nbhd_oup, kernel_size = (kernel_size,kernel_size), padding="same", \
-                                        name = "nbhd_convs_time{0}_{1}_size_{2}".format(level_num, block_num, kernel_size)))
-                    flow_block.append(Conv2D(filters = flow_oup, kernel_size = (kernel_size,kernel_size), padding="same", \
-                                        name = "flow_convs_time{0}_{1}_size_{2}".format(level_num, block_num, kernel_size)))
-                self.choice_block.append([nbhd_block, flow_block])
-            self.vol_flow_block.append(self.choice_block)
+        # nbhd / flow layer in the short-term part
+        self.nbhd_convs_list_time0=[]
+        self.nbhd_convs_list_time1=[]
+        self.nbhd_convs_list_time2=[]
+        self.flow_convs_list_time0=[]
+        self.flow_convs_list_time1=[]
+        self.flow_convs_list_time2=[]
+        for ts in range(self.lstm_seq_len):
+            for kernel_size in self.kernel_list:
+                self.nbhd_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                    name = "nbhd_convs_time0_{0}".format(ts+1)))
+                self.nbhd_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                    name = "nbhd_convs_time1_{0}".format(ts+1)))
+                self.nbhd_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                    name = "nbhd_convs_time2_{0}".format(ts+1)))
+                self.flow_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                    name = "flow_convs_time0_{0}".format(ts+1)))
+                self.flow_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                    name = "flow_convs_time1_{0}".format(ts+1)))
+                self.flow_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                    name = "flow_convs_time2_{0}".format(ts+1)))
 
         # dense layer in the short-term part
         self.short_term_dense_list=[]
@@ -76,18 +81,25 @@ class STDN_NAS(keras.Model):
             self.att_flow_convs_list_time1.append([])
             self.att_flow_convs_list_time2.append([])
             for ts in range(self.att_lstm_seq_len):
-                self.att_nbhd_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_nbhd_convs_time0_{0}_{1}".format(att+1,ts+1)))
-                self.att_nbhd_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_nbhd_convs_time1_{0}_{1}".format(att+1,ts+1)))
-                self.att_nbhd_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_nbhd_convs_time2_{0}_{1}".format(att+1,ts+1)))
-                self.att_flow_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_flow_convs_time0_{0}_{1}".format(att+1,ts+1)))
-                self.att_flow_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_flow_convs_time1_{0}_{1}".format(att+1,ts+1)))
-                self.att_flow_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_flow_convs_time2_{0}_{1}".format(att+1,ts+1)))
+                self.att_nbhd_convs_list_time0[att].append([])
+                self.att_nbhd_convs_list_time1[att].append([])
+                self.att_nbhd_convs_list_time2[att].append([])
+                self.att_flow_convs_list_time0[att].append([])
+                self.att_flow_convs_list_time1[att].append([])
+                self.att_flow_convs_list_time2[att].append([])
+                for kernel_size in self.kernel_list:
+                    self.att_nbhd_convs_list_time0[att][ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                name = "att_nbhd_convs_time0_{0}_{1}".format(att+1,ts+1)))
+                    self.att_nbhd_convs_list_time1[att][ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                name = "att_nbhd_convs_time1_{0}_{1}".format(att+1,ts+1)))
+                    self.att_nbhd_convs_list_time2[att][ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                name = "att_nbhd_convs_time2_{0}_{1}".format(att+1,ts+1)))
+                    self.att_flow_convs_list_time0[att][ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                name = "att_flow_convs_time0_{0}_{1}".format(att+1,ts+1)))
+                    self.att_flow_convs_list_time1[att][ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                name = "att_flow_convs_time1_{0}_{1}".format(att+1,ts+1)))
+                    self.att_flow_convs_list_time2[att][ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                                                name = "att_flow_convs_time2_{0}_{1}".format(att+1,ts+1)))
 
         # attention part dense list
         self.att_dense_list=[]
@@ -113,7 +125,11 @@ class STDN_NAS(keras.Model):
 
         num_choice=3
         num_layers=6
-        self.choice=list(np.random.randint(num_choice, size=num_layers*self.lstm_seq_len))
+        short_choice = list(np.random.randint(num_choice, size=num_layers*self.lstm_seq_len))
+        att_choice = list(np.random.randint(num_choice, size=num_layers*self.att_lstm_num*self.att_lstm_seq_len))
+        self.choice=[short_choice, att_choice]
+
+        print("shape of choice: ", len(self.choice[0]), " ", len(self.choice[1]))
 
         with tf.GradientTape() as tape:
             y_pred = self(x, training=True)  # Forward pass
@@ -160,10 +176,10 @@ class STDN_NAS(keras.Model):
 
         #1st level gate
         #nbhd cnn
-        nbhd_convs = [self.vol_flow_block[i][0][0][self.choice[6*i]](nbhd_inputs[i]) for i in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_convs_list_time0[self.choice[0][(self.lstm_seq_len-1)]](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [Activation("relu", name = "nbhd_convs_activation_time0_{0}".format(ts+1))(nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
         #flow cnn
-        flow_convs = [self.vol_flow_block[i][0][1][self.choice[6*i+1]](flow_inputs[i]) for i in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_convs_list_time0[self.choice[0][(self.lstm_seq_len-1)+1]](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
         flow_convs = [Activation("relu", name = "flow_convs_activation_time0_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         #flow gate
         flow_gates = [Activation("sigmoid", name = "flow_gate0_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
@@ -171,17 +187,17 @@ class STDN_NAS(keras.Model):
 
 
         #2nd level gate
-        nbhd_convs = [self.vol_flow_block[i][1][0][self.choice[6*i+2]](nbhd_inputs[i]) for i in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_convs_list_time1[self.choice[0][(self.lstm_seq_len-1)+2]](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [Activation("relu", name = "nbhd_convs_activation_time1_{0}".format(ts+1))(nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.vol_flow_block[i][1][1][self.choice[6*i+3]](flow_inputs[i]) for i in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_convs_list_time1[self.choice[0][(self.lstm_seq_len-1)+3]](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
         flow_convs = [Activation("relu", name = "flow_convs_activation_time1_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         flow_gates = [Activation("sigmoid", name = "flow_gate1_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
 
         #3rd level gate
-        nbhd_convs = [self.vol_flow_block[i][2][0][self.choice[6*i+4]](nbhd_inputs[i]) for i in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_convs_list_time2[self.choice[0][(self.lstm_seq_len-1)+4]](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [Activation("relu", name = "nbhd_convs_activation_time2_{0}".format(ts+1))(nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.vol_flow_block[i][2][1][self.choice[6*i+5]](flow_inputs[i]) for i in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_convs_list_time2[self.choice[0][(self.lstm_seq_len-1)+5]](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
         flow_convs = [Activation("relu", name = "flow_convs_activation_time2_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         flow_gates = [Activation("sigmoid", name = "flow_gate2_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
@@ -201,23 +217,25 @@ class STDN_NAS(keras.Model):
         lstm = self.short_term_lstm(lstm_input)
 
         #attention part
-        att_nbhd_convs = [[self.att_nbhd_convs_list_time0[att][ts](att_nbhd_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        index_num = (self.att_lstm_num - 1)
+        index_len = (self.att_lstm_seq_len - 1)
+        att_nbhd_convs = [[self.att_nbhd_convs_list_time0[att][ts][self.choice[1][index_num*att + index_len*ts]](att_nbhd_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[Activation("relu", name = "att_nbhd_convs_activation_time0_{0}_{1}".format(att+1,ts+1))(att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_convs_list_time0[att][ts](att_flow_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_convs_list_time0[att][ts][self.choice[1][index_num*att + index_len*ts + 1]](att_flow_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_convs = [[Activation("relu", name = "att_flow_convs_activation_time0_{0}_{1}".format(att+1,ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_gates = [[Activation("sigmoid", name = "att_flow_gate0_{0}_{1}".format(att+1, ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
-        att_nbhd_convs = [[self.att_nbhd_convs_list_time1[att][ts](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_nbhd_convs = [[self.att_nbhd_convs_list_time1[att][ts][self.choice[1][index_num*att + index_len*ts + 2]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[Activation("relu", name = "att_nbhd_convs_activation_time1_{0}_{1}".format(att+1,ts+1))(att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_convs_list_time1[att][ts](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_convs_list_time1[att][ts][self.choice[1][index_num*att + index_len*ts + 3]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_convs = [[Activation("relu", name = "att_flow_convs_activation_time1_{0}_{1}".format(att+1,ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_gates = [[Activation("sigmoid", name = "att_flow_gate1_{0}_{1}".format(att+1, ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
-        att_nbhd_convs = [[self.att_nbhd_convs_list_time2[att][ts](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_nbhd_convs = [[self.att_nbhd_convs_list_time2[att][ts][self.choice[1][index_num*att + index_len*ts + 4]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[Activation("relu", name = "att_nbhd_convs_activation_time2_{0}_{1}".format(att+1,ts+1))(att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_convs_list_time2[att][ts](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_convs_list_time2[att][ts][self.choice[1][index_num*att + index_len*ts + 5]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_convs = [[Activation("relu", name = "att_flow_convs_activation_time2_{0}_{1}".format(att+1,ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_gates = [[Activation("sigmoid", name = "att_flow_gate2_{0}_{1}".format(att+1, ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
@@ -271,22 +289,27 @@ class STDN_Network(keras.Model):
         self.kernel_list=[1,2,3]
         self.nbhd_channel=[64,64,64]
 
-        self.vol_flow_block=[]
-        self.choice_block=[]
-        for block_num in range(lstm_seq_len):
-            for level_num in range(self.level):
-                nbhd_oup=self.nbhd_channel[level_num]
-                flow_oup=self.nbhd_channel[level_num]
-                nbhd_block=[]
-                flow_block=[]
-                nbhd_kernel_size=self.kernel_list[choice[block_num*6+level_num*2]]
-                flow_kernel_size=self.kernel_list[choice[block_num*6+level_num*2+1]]
-                nbhd_block.append(Conv2D(filters = nbhd_oup, kernel_size = (nbhd_kernel_size, nbhd_kernel_size), padding="same", \
-                                    name = "nbhd_convs_time{0}_{1}_size_{2}".format(level_num, block_num, nbhd_kernel_size)))
-                flow_block.append(Conv2D(filters = flow_oup, kernel_size = (flow_kernel_size, flow_kernel_size), padding="same", \
-                                    name = "flow_convs_time{0}_{1}_size_{2}".format(level_num, block_num, flow_kernel_size)))
-                self.choice_block.append([nbhd_block, flow_block])
-            self.vol_flow_block.append(self.choice_block)
+        # nbhd / flow layer in the short-term part
+        self.nbhd_convs_list_time0=[]
+        self.nbhd_convs_list_time1=[]
+        self.nbhd_convs_list_time2=[]
+        self.flow_convs_list_time0=[]
+        self.flow_convs_list_time1=[]
+        self.flow_convs_list_time2=[]
+        for ts in range(self.lstm_seq_len):
+            index = (self.lstm_seq_len-1)
+            self.nbhd_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts]], self.kernel_list[choice[0][index*ts]]), \
+                                                padding="same", name = "nbhd_convs_time0_{0}".format(ts+1)))
+            self.nbhd_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+1]], self.kernel_list[choice[0][index*ts+1]]), \
+                                                padding="same", name = "nbhd_convs_time1_{0}".format(ts+1)))
+            self.nbhd_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+2]], self.kernel_list[choice[0][index*ts+2]]), \
+                                                padding="same", name = "nbhd_convs_time2_{0}".format(ts+1)))
+            self.flow_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+3]], self.kernel_list[choice[0][index*ts+3]]), \
+                                                padding="same", name = "flow_convs_time0_{0}".format(ts+1)))
+            self.flow_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+4]], self.kernel_list[choice[0][index*ts+4]]), \
+                                                padding="same", name = "flow_convs_time1_{0}".format(ts+1)))
+            self.flow_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+5]], self.kernel_list[choice[0][index*ts+5]]), \
+                                                padding="same", name = "flow_convs_time2_{0}".format(ts+1)))
 
         # dense layer in the short-term part
         self.short_term_dense_list=[]
@@ -311,18 +334,20 @@ class STDN_Network(keras.Model):
             self.att_flow_convs_list_time1.append([])
             self.att_flow_convs_list_time2.append([])
             for ts in range(self.att_lstm_seq_len):
-                self.att_nbhd_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_nbhd_convs_time0_{0}_{1}".format(att+1,ts+1)))
-                self.att_nbhd_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_nbhd_convs_time1_{0}_{1}".format(att+1,ts+1)))
-                self.att_nbhd_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_nbhd_convs_time2_{0}_{1}".format(att+1,ts+1)))
-                self.att_flow_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_flow_convs_time0_{0}_{1}".format(att+1,ts+1)))
-                self.att_flow_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_flow_convs_time1_{0}_{1}".format(att+1,ts+1)))
-                self.att_flow_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (3,3), padding="same", \
-                                            name = "att_flow_convs_time2_{0}_{1}".format(att+1,ts+1)))
+                index_num = (self.att_lstm_num - 1)
+                index_len = (self.att_lstm_seq_len - 1)
+                self.att_nbhd_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts]], \
+                                            self.kernel_list[choice[1][index_num*att+index_len*ts]]), padding="same", name = "att_nbhd_convs_time0_{0}_{1}".format(att+1,ts+1)))
+                self.att_nbhd_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+1]], \
+                                            self.kernel_list[choice[1][index_num*att+index_len*ts+1]]), padding="same", name = "att_nbhd_convs_time1_{0}_{1}".format(att+1,ts+1)))
+                self.att_nbhd_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+2]], \
+                                            self.kernel_list[choice[1][index_num*att+index_len*ts]]), padding="same", name = "att_nbhd_convs_time2_{0}_{1}".format(att+1,ts+1)))
+                self.att_flow_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+3]], \
+                                            self.kernel_list[choice[1][index_num*att+index_len*ts+3]]), padding="same", name = "att_flow_convs_time0_{0}_{1}".format(att+1,ts+1)))
+                self.att_flow_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+4]], \
+                                            self.kernel_list[choice[1][index_num*att+index_len*ts+4]]), padding="same", name = "att_flow_convs_time1_{0}_{1}".format(att+1,ts+1)))
+                self.att_flow_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+5]], \
+                                            self.kernel_list[choice[1][index_num*att+index_len*ts+5]]), padding="same", name = "att_flow_convs_time2_{0}_{1}".format(att+1,ts+1)))
 
         # attention part dense list
         self.att_dense_list=[]
@@ -376,36 +401,33 @@ class STDN_Network(keras.Model):
 
         # print("choice:", self.choice)
 
-        #short-term part
-
-        #1st level gate
+        # short-term part
+        # 1st level gate
         #nbhd cnn
-        nbhd_convs = [self.vol_flow_block[i][0][0][0](nbhd_inputs[i]) for i in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_convs_list_time0[ts](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [Activation("relu", name = "nbhd_convs_activation_time0_{0}".format(ts+1))(nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
         #flow cnn
-        flow_convs = [self.vol_flow_block[i][0][1][0](flow_inputs[i]) for i in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_convs_list_time0[ts](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
         flow_convs = [Activation("relu", name = "flow_convs_activation_time0_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         #flow gate
         flow_gates = [Activation("sigmoid", name = "flow_gate0_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
 
-
         #2nd level gate
-        nbhd_convs = [self.vol_flow_block[i][1][0][0](nbhd_inputs[i]) for i in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_convs_list_time1[ts](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [Activation("relu", name = "nbhd_convs_activation_time1_{0}".format(ts+1))(nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.vol_flow_block[i][1][1][0](flow_inputs[i]) for i in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_convs_list_time1[ts](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
         flow_convs = [Activation("relu", name = "flow_convs_activation_time1_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         flow_gates = [Activation("sigmoid", name = "flow_gate1_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
 
         #3rd level gate
-        nbhd_convs = [self.vol_flow_block[i][2][0][0](nbhd_inputs[i]) for i in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_convs_list_time2[ts](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [Activation("relu", name = "nbhd_convs_activation_time2_{0}".format(ts+1))(nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.vol_flow_block[i][2][1][0](flow_inputs[i]) for i in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_convs_list_time2[ts](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
         flow_convs = [Activation("relu", name = "flow_convs_activation_time2_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         flow_gates = [Activation("sigmoid", name = "flow_gate2_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
-
 
         #dense part
         nbhd_vecs = [Flatten(name = "nbhd_flatten_time_{0}".format(ts+1))(nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
