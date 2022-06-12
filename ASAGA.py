@@ -20,6 +20,8 @@ class ASAGA_Searcher():
         self.num_layers=config["model"]["num_layers"]
         self.threshold = config["dataset"]["threshold"] / config["dataset"]["volume_train_max"]
         self.short_term_lstm_seq_num = config["dataset"]["short_term_lstm_seq_num"]
+        self.att_lstm_num = config["dataset"]["att_lstm_num"]
+        self.long_term_lstm_seq_num = config["dataset"]["long_term_lstm_seq_num"]
     def search(self):
         """
         Initialization
@@ -28,7 +30,9 @@ class ASAGA_Searcher():
         """
         parent_population=[]
         for p in range(self.population_num):
-            architecture=list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
+            short_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
+            att_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
+            architecture=[short_choice, att_choice]
             # no avaliable condition currently
             parent_population.append(architecture)
         parent_population=np.array(parent_population)
