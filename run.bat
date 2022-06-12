@@ -8,7 +8,8 @@ echo 2. Train
 echo 3. Search
 echo 4. Retrain
 echo 5. Test
-echo 6. Quit
+echo 6. =======Tmp Run All=========
+echo 7. Quit
 echo *********************************************
 
 @REM change the conda environment here
@@ -16,7 +17,7 @@ echo *********************************************
 SET conda-env=stdn_keras
 call activate %conda-env%
 
-CHOICE /C:123456 /M Select
+CHOICE /C:1234567 /M Select
 
 GOTO :case-%ERRORLEVEL%
 
@@ -56,6 +57,18 @@ GOTO :case-%ERRORLEVEL%
     echo starting testing phase...
     powershell "cmd /c python eval_architecture.py"
     echo testing phase complete
+    GOTO :exit_prog
+
+:case-6
+    echo starting training phase...
+    python train_supernet.py > log/training_step.txt
+    echo starting searching phase...
+    python search.py > log/search.txt
+    echo starting retaining phase...
+    python retrain_architecture.py > log/retraining_step.txt
+    echo starting testing phase...
+    python eval_architecture.py > log/eval_architecture.txt
+    echo all phase complete
     GOTO :exit_prog
 
 :exit_prog
