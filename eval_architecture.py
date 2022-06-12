@@ -51,7 +51,7 @@ def eval_architecture():
 
     logging.info("loading architecture...")
     tf.config.run_functions_eagerly(True)
-    searched_choice=np.load(open(config["file"]["path"]+"searched_choice_list.npy", "rb"))
+    searched_choice=np.load(open(config["file"]["path"]+"searched_choice_list.npy", "rb"), allow_pickle = True)
     model=STDN_Network(searched_choice, att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_num, \
                             lstm_seq_len=len(cnnx), feature_vec_len=x.shape[-1], \
                             cnn_flat_size=cnn_flat_size, nbhd_size=cnnx[0].shape[1], nbhd_type=cnnx[0].shape[-1])
