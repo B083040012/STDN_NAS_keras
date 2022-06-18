@@ -67,7 +67,10 @@ GOTO :case-%ERRORLEVEL%
     echo starting retaining phase...
     python retrain_architecture.py > log/retraining_step.txt
     echo starting testing phase...
-    python eval_architecture.py > log/eval_architecture.txt
+    echo eval final architecture
+    python eval_architecture.py > log/eval_final_architecture.txt
+    echo eval best architecture
+    python eval_best_architecture.py > log/eval_best_architecture.txt
     echo all phase complete
     GOTO :exit_prog
 
