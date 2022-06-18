@@ -30,9 +30,18 @@ class ASAGA_Searcher():
         """
         parent_population=[]
         for p in range(self.population_num):
-            short_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
-            att_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
-            architecture=[short_choice, att_choice]
+
+            # conv size choice
+            short_conv_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
+            att_conv_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
+            # pooling choice: [2,3,4] pool_size for max/avg pooling and no pooling: 3*2+1 choices
+            short_pooling_choice = list(np.random.randint(self.num_choice*2+1, size=self.num_layers*self.short_term_lstm_seq_num))
+            att_pooling_choice = list(np.random.randint(self.num_choice*2+1, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
+            # relu choice: relu, relu6, prelu
+            short_relu_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
+            att_relu_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
+            architecture=[short_conv_choice, att_conv_choice, short_pooling_choice, att_pooling_choice, short_relu_choice, att_relu_choice]
+
             # no avaliable condition currently
             parent_population.append(architecture)
         parent_population=np.array(parent_population)
