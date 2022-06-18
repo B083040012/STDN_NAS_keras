@@ -56,7 +56,7 @@ def eval_architecture():
                             lstm_seq_len=len(cnnx), feature_vec_len=x.shape[-1], \
                             cnn_flat_size=cnn_flat_size, nbhd_size=cnnx[0].shape[1], nbhd_type=cnnx[0].shape[-1])
 
-    checkpoint_file= config["file"]["path"] + 'retrained_weights'
+    checkpoint_file= config["file"]["path"] + 'retrained_final_weights'
     model.load_weights(checkpoint_file).expect_partial()
     logging.info("Finishing import the pretrained supernet")
     logging.info("architecture loading complete")
@@ -70,10 +70,10 @@ def eval_architecture():
 
     total_loss_rmse, total_loss_mape = eval_together(test_label, test_pred, threshold)
     (prmse, pmape), (drmse, dmape) = eval_lstm(test_label, test_pred, threshold)
-    logging.info("testing complete")
-    logging.info("[Testing Result] pickup rmse = {0}, pickup mape = {1}%\ndropoff rmse = {2}, dropoff mape = {3}%".format(prmse, pmape * 100, drmse, dmape * 100))
-    logging.info("[Testing Result] total_rmse = {0}, total_mape = {1}".format(total_loss_rmse, total_loss_mape * 100))
-    logging.info("[Architecture Testing Phase End]")
+    logging.info("final_architecture_testing complete")
+    logging.info("[Final Testing Result] pickup rmse = {0}, pickup mape = {1}%\ndropoff rmse = {2}, dropoff mape = {3}%".format(prmse, pmape * 100, drmse, dmape * 100))
+    logging.info("[Final Testing Result] total_rmse = {0}, total_mape = {1}".format(total_loss_rmse, total_loss_mape * 100))
+    logging.info("[Final Architecture Testing Phase End]")
 
 if __name__=='__main__':
     eval_architecture()
