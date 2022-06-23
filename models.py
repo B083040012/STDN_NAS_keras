@@ -128,6 +128,11 @@ class STDN_NAS(keras.Model):
         for ts in range(self.lstm_seq_len):
             self.short_term_dense_list.append(Dense(units = self.cnn_flat_size, name = "nbhd_dense_time_{0}".format(ts+1)))
 
+        # # weather dense layer in the short-term part
+        # self.short_term_weather_dense_list=[]
+        # for ts in range(self.lstm_seq_len):
+        #     self.short_term_weather_dense_list.append(Dense(units = self.cnn_flat_size, name = "weather_dense_time_{0}".format(ts+1)))
+
         # lstm layer in short-term part
         self.short_term_lstm=LSTM(units=self.lstm_out_size, return_sequences=False, dropout=0.1, recurrent_dropout=0)
 
@@ -289,8 +294,6 @@ class STDN_NAS(keras.Model):
         att_relu_choice = list(np.random.randint(num_choice, size=num_layers*self.att_lstm_num*self.att_lstm_seq_len))
         self.choice=[short_conv_choice, att_conv_choice, short_pooling_choice, att_pooling_choice, short_relu_choice, att_relu_choice]
 
-        print("shape of choice: ", len(self.choice[0]), len(self.choice[1]))
-
         with tf.GradientTape() as tape:
             y_pred = self(x, training=True)  # Forward pass
             # Compute the loss value
@@ -322,7 +325,7 @@ class STDN_NAS(keras.Model):
 
     def call(self, input):
         
-        flatten_att_nbhd_inputs, flatten_att_flow_inputs, att_lstm_inputs, nbhd_inputs, flow_inputs, [lstm_inputs,] = input
+        flatten_att_nbhd_inputs, flatten_att_flow_inputs, att_lstm_inputs, nbhd_inputs, flow_inputs, [lstm_inputs,], weather, att_weather = input
 
         att_nbhd_inputs = []
         att_flow_inputs = []
@@ -382,10 +385,12 @@ class STDN_NAS(keras.Model):
         nbhd_vecs = [self.short_term_dense_list[ts](nbhd_vecs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_vecs = [Activation("relu", name = "nbhd_dense_activation_time_{0}".format(ts+1))(nbhd_vecs[ts]) for ts in range(self.lstm_seq_len)]
 
+        # should weather run FC???
+
         #feature concatenate
         nbhd_vec = Concatenate(axis=-1)(nbhd_vecs)
         nbhd_vec = Reshape(target_shape = (self.lstm_seq_len, self.cnn_flat_size))(nbhd_vec)
-        lstm_input = Concatenate(axis=-1)([lstm_inputs, nbhd_vec])
+        lstm_input = Concatenate(axis=-1)([lstm_inputs, nbhd_vec, weather])
 
         #lstm
         lstm = self.short_term_lstm(lstm_input)
@@ -439,7 +444,7 @@ class STDN_NAS(keras.Model):
 
         att_nbhd_vec = [Concatenate(axis=-1)(att_nbhd_vecs[att]) for att in range(self.att_lstm_num)]
         att_nbhd_vec = [Reshape(target_shape = (self.att_lstm_seq_len, self.cnn_flat_size))(att_nbhd_vec[att]) for att in range(self.att_lstm_num)]
-        att_lstm_input = [Concatenate(axis=-1)([att_lstm_inputs[att], att_nbhd_vec[att]]) for att in range(self.att_lstm_num)]
+        att_lstm_input = [Concatenate(axis=-1)([att_lstm_inputs[att], att_nbhd_vec[att], att_weather[att]]) for att in range(self.att_lstm_num)]
 
         att_lstms = [self.att_lstm_list[att](att_lstm_input[att]) for att in range(self.att_lstm_num)]
 
@@ -734,7 +739,7 @@ class STDN_Network(keras.Model):
 
     def call(self, input):
         
-        flatten_att_nbhd_inputs, flatten_att_flow_inputs, att_lstm_inputs, nbhd_inputs, flow_inputs, [lstm_inputs,] = input
+        flatten_att_nbhd_inputs, flatten_att_flow_inputs, att_lstm_inputs, nbhd_inputs, flow_inputs, [lstm_inputs,], weather, att_weather = input
 
         att_nbhd_inputs = []
         att_flow_inputs = []
@@ -792,7 +797,7 @@ class STDN_Network(keras.Model):
         #feature concatenate
         nbhd_vec = Concatenate(axis=-1)(nbhd_vecs)
         nbhd_vec = Reshape(target_shape = (self.lstm_seq_len, self.cnn_flat_size))(nbhd_vec)
-        lstm_input = Concatenate(axis=-1)([lstm_inputs, nbhd_vec])
+        lstm_input = Concatenate(axis=-1)([lstm_inputs, nbhd_vec, weather])
 
         #lstm
         lstm = self.short_term_lstm(lstm_input)
@@ -846,7 +851,7 @@ class STDN_Network(keras.Model):
 
         att_nbhd_vec = [Concatenate(axis=-1)(att_nbhd_vecs[att]) for att in range(self.att_lstm_num)]
         att_nbhd_vec = [Reshape(target_shape = (self.att_lstm_seq_len, self.cnn_flat_size))(att_nbhd_vec[att]) for att in range(self.att_lstm_num)]
-        att_lstm_input = [Concatenate(axis=-1)([att_lstm_inputs[att], att_nbhd_vec[att]]) for att in range(self.att_lstm_num)]
+        att_lstm_input = [Concatenate(axis=-1)([att_lstm_inputs[att], att_nbhd_vec[att], att_weather[att]]) for att in range(self.att_lstm_num)]
 
         att_lstms = [self.att_lstm_list[att](att_lstm_input[att]) for att in range(self.att_lstm_num)]
 
