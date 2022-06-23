@@ -26,11 +26,13 @@ class STDN_fileloader:
     def load_train(self):
         self.volume_train = np.load(open(self.config["volume_train"], "rb"))["volume"] / self.config["volume_train_max"]
         self.flow_train = np.load(open(self.config["flow_train"], "rb"))["flow"] / self.config["flow_train_max"]
+        self.weather_train = np.load('data\\weather_train.npy')
 
     def load_test(self):
         # shape (timeslot_num, x_num, y_num, type=2)
         self.volume_test = np.load(open(self.config["volume_test"], "rb"))["volume"] / self.config["volume_train_max"]
         self.flow_test = np.load(open(self.config["flow_test"], "rb"))["flow"] / self.config["flow_train_max"]
+        self.weather_test = np.load('data\\weather_test.npy')
 
     #this function nbhd for cnn, and features for lstm, based on attention model
     def sample_stdn(self, datatype, att_lstm_num = 3, long_term_lstm_seq_len = 3, short_term_lstm_seq_len = 7,\
@@ -49,10 +51,12 @@ class STDN_fileloader:
             self.load_train()
             data = self.volume_train
             flow_data = self.flow_train
+            weather_data = self.weather_train
         elif datatype == "test":
             self.load_test()
             data = self.volume_test
             flow_data = self.flow_test
+            weather_data = self.weather_test
         else:
             print("Please select **train** or **test**")
             raise Exception
@@ -61,8 +65,10 @@ class STDN_fileloader:
         cnn_att_features = []
         lstm_att_features = []
         flow_att_features = []
+        weather_att_features = []
         for i in range(att_lstm_num):
             lstm_att_features.append([])
+            weather_att_features.append([])
             cnn_att_features.append([])
             flow_att_features.append([])
             for j in range(long_term_lstm_seq_len):
@@ -71,6 +77,7 @@ class STDN_fileloader:
 
         cnn_features = []
         flow_features = []
+        weather_features = []
         for i in range(short_term_lstm_seq_len):
             cnn_features.append([])
             flow_features.append([])
@@ -102,6 +109,7 @@ class STDN_fileloader:
                     
                     #sample common (short-term) lstm
                     short_term_lstm_samples = []
+                    short_term_weather_samples = []
                     for seqn in range(short_term_lstm_seq_len):
                         # real_t from (t - short_term_lstm_seq_len) to (t-1)
                         real_t = t - (short_term_lstm_seq_len - seqn)
@@ -166,13 +174,16 @@ class STDN_fileloader:
                         feature_vec = np.concatenate((feature_vec, nbhd_feature))
 
                         short_term_lstm_samples.append(feature_vec)
+                        short_term_weather_samples.append(weather_data[real_t])
                     short_term_lstm_features.append(np.array(short_term_lstm_samples))
+                    weather_features.append(np.array(short_term_weather_samples))
 
                     #sample att-lstms
                     for att_lstm_cnt in range(att_lstm_num):
                         
                         #sample lstm at att loc att_lstm_cnt
                         long_term_lstm_samples = []
+                        long_term_weather_samples = []
                         # get time att_t, move forward for (att_lstm_num - att_lstm_cnt) day, then move back for ([long_term_lstm_seq_len / 2] + 1)
                         # notice that att_t-th timeslot will not be sampled in lstm
                         # e.g., **** (att_t - 3) **** (att_t - 2) (yesterday's t) **** (att_t - 1) **** (att_t) (this one will not be sampled)
@@ -245,15 +256,18 @@ class STDN_fileloader:
                             feature_vec = np.concatenate((feature_vec, nbhd_feature))
 
                             long_term_lstm_samples.append(feature_vec)
+                            long_term_weather_samples.append(weather_data[real_t])
                         lstm_att_features[att_lstm_cnt].append(np.array(long_term_lstm_samples))
+                        weather_att_features[att_lstm_cnt].append(np.array(long_term_weather_samples))
 
                     #label
-                    labels.append(data[t, x , y, :].flatten())
+                    labels.append(data[t, x , y, :].flatten())          
 
         output_cnn_att_features = []
         output_flow_att_features = []
         for i in range(att_lstm_num):
             lstm_att_features[i] = np.array(lstm_att_features[i])
+            weather_att_features[i] = np.array(weather_att_features[i])
             for j in range(long_term_lstm_seq_len):
                 cnn_att_features[i][j] = np.array(cnn_att_features[i][j])
                 flow_att_features[i][j] = np.array(flow_att_features[i][j])
@@ -264,6 +278,7 @@ class STDN_fileloader:
             cnn_features[i] = np.array(cnn_features[i])
             flow_features[i] = np.array(flow_features[i])
         short_term_lstm_features = np.array(short_term_lstm_features)
+        weather_features = np.array(weather_features)
         labels = np.array(labels)
 
-        return output_cnn_att_features, output_flow_att_features, lstm_att_features, cnn_features, flow_features, short_term_lstm_features, labels
+        return output_cnn_att_features, output_flow_att_features, lstm_att_features, cnn_features, flow_features, short_term_lstm_features, labels, weather_features, weather_att_features
