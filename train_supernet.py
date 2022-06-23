@@ -57,14 +57,14 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
     # loading data
     logging.info("loading training data...")
     dataloader = STDN_fileloader(config_path = "data_bike.json")
-    att_cnnx, att_flow, att_x, cnnx, flow, x, y = dataloader.sample_stdn(datatype="train",
+    att_cnnx, att_flow, att_x, cnnx, flow, x, y, weather, att_weather = dataloader.sample_stdn(datatype="train",
                                                                         att_lstm_num=att_lstm_num, \
                                                                         long_term_lstm_seq_len=long_term_lstm_seq_num,
                                                                         short_term_lstm_seq_len=short_term_lstm_seq_num, \
                                                                         nbhd_size=nbhd_size,
                                                                         cnn_nbhd_size=cnn_nbhd_size)
 
-    train_data = [att_cnnx, att_flow, att_x, cnnx, flow, [x, ]]
+    train_data = [att_cnnx, att_flow, att_x, cnnx, flow, [x, ], weather, att_weather]
     train_label = y
     print("Start training supernet with input shape {1} / {0}".format(x.shape, cnnx[0].shape))
     logging.info("train data loading complete")
@@ -79,7 +79,7 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
     model=STDN_NAS(att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_num, \
                             lstm_seq_len=len(cnnx), feature_vec_len=x.shape[-1], \
                             cnn_flat_size=cnn_flat_size, nbhd_size=cnnx[0].shape[1], nbhd_type=cnnx[0].shape[-1])
-    logging.info("architecture loading complete")
+    logging.info("supernet loading complete")
 
     model.compile(optimizer = 'adagrad', loss = 'mse', metrics=[])
     logging.info("start training supernet...")

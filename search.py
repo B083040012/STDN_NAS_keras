@@ -44,13 +44,13 @@ def search():
 
     # loading val dataset
     dataloader= STDN_fileloader(config_path = "data_bike.json")
-    att_cnnx, att_flow, att_x, cnnx, flow, x, y =  dataloader.sample_stdn(datatype="validation",
+    att_cnnx, att_flow, att_x, cnnx, flow, x, y, weather, att_weather =  dataloader.sample_stdn(datatype="validation",
                                                                         att_lstm_num=att_lstm_num, \
                                                                         long_term_lstm_seq_len=long_term_lstm_seq_num,
                                                                         short_term_lstm_seq_len=short_term_lstm_seq_num, \
                                                                         nbhd_size=nbhd_size,
                                                                         cnn_nbhd_size=cnn_nbhd_size)
-    val_loader=[att_cnnx, att_flow, att_x, cnnx, flow, [x,]]
+    val_loader=[att_cnnx, att_flow, att_x, cnnx, flow, [x,], weather, att_weather]
     val_label = y*config["dataset"]["volume_train_max"]
 
     # loading model

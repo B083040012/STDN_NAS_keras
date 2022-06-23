@@ -42,10 +42,10 @@ def eval_architecture():
     logging.info("[Architecture Testing Phase]")
     logging.info("loading testing data...")
     dataloader = STDN_fileloader(config_path = "data_bike.json")
-    att_cnnx, att_flow, att_x, cnnx, flow, x, y = dataloader.sample_stdn(datatype="test", nbhd_size=nbhd_size,
+    att_cnnx, att_flow, att_x, cnnx, flow, x, y, weather, att_weather = dataloader.sample_stdn(datatype="test", nbhd_size=nbhd_size,
                                                                           cnn_nbhd_size=cnn_nbhd_size)
 
-    test_data = [att_cnnx, att_flow, att_x, cnnx, flow, [x, ]]
+    test_data = [att_cnnx, att_flow, att_x, cnnx, flow, [x, ], weather, att_weather]
     test_label = y * config["dataset"]["volume_test_max"]
     logging.info("test data loading complete")
 
