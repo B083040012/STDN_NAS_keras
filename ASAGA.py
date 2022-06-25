@@ -1,6 +1,7 @@
+from re import sub
 import numpy as np
 from criterion import eval_rmse
-import math
+import math, random
 
 
 class ASAGA_Searcher():
@@ -40,7 +41,10 @@ class ASAGA_Searcher():
             # relu choice: relu, relu6, prelu
             short_relu_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
             att_relu_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
-            architecture=[short_conv_choice, att_conv_choice, short_pooling_choice, att_pooling_choice, short_relu_choice, att_relu_choice]
+            # flow gate choice: sigmoid, relu6, tanh: 3 choices
+            flow_gate_choice = list(np.random.randint(self.num_choice, size=3*self.short_term_lstm_seq_num))
+            att_flow_gate_choice = list(np.random.randint(self.num_choice, size=3*self.att_lstm_num*self.long_term_lstm_seq_num))
+            architecture=[short_conv_choice, att_conv_choice, short_pooling_choice, att_pooling_choice, short_relu_choice, att_relu_choice, flow_gate_choice, att_flow_gate_choice]
 
             # no avaliable condition currently
             parent_population.append(architecture)
@@ -62,14 +66,17 @@ class ASAGA_Searcher():
         self.curr_tmp=self.initial_tmp
         global_best_loss=tmp_best_loss
         global_best_architecture=parent_population[tmp_best_index]
-        offspring_population=parent_population
         self.logger.info("--------------[Generation Start]--------------")
         for gen in range(self.generation_num):
             if self.curr_tmp<=self.config["searching"]["final_tmp"]:
                 break
+            # randomly choose parent and avoid choose repeatly
+            all_index_list = [pop_index for pop_index in range(0, self.population_num)]
+            random.shuffle(all_index_list)
             for loop in range(int(self.population_num/2)):
                 print("loop %d in gen %d" %(loop, gen))
-                index_list=[np.random.randint(low=0, high=self.num_layers),np.random.randint(low=0, high=self.num_layers)]
+                # index_list=[np.random.randint(low=0, high=self.population_num),np.random.randint(low=0, high=self.population_num)]
+                index_list = [all_index_list.pop(), all_index_list.pop()]
                 parent_list=[parent_population[index] for index in index_list]
                 parent_subfitness=[parent_fitness[index] for index in index_list]
                 offspring_list=self.crossover(parent_list)
@@ -97,16 +104,27 @@ class ASAGA_Searcher():
     def crossover(self, parent_list):
         """
         crossover on single point
+        crossover in each sublist (current), or crossover in the whole list????
         """
-        cross_point=np.random.randint(low=0, high=self.num_layers)
-        offspring_list=parent_list
-        offspring_list[0][:cross_point]=parent_list[1][:cross_point]
-        offspring_list[1][cross_point:]=parent_list[0][cross_point:]
+        offspring_list = list()
+        offspring_list.append([])
+        offspring_list.append([])
+        for sub_index in range(0, len(parent_list[0])):
+            prob = np.random.uniform(0,1)
+            cross_point=np.random.randint(low=0, high=len(parent_list[0][sub_index]))
+            tmp_sublist = [parent_list[0][sub_index], parent_list[1][sub_index]]
+            if prob > self.crossover_rate:
+                tmp_sublist[0][:cross_point]=parent_list[1][sub_index][:cross_point]
+                tmp_sublist[1][cross_point:]=parent_list[0][sub_index][cross_point:]
+
+            offspring_list[0].append(tmp_sublist[0])
+            offspring_list[1].append(tmp_sublist[1])
         return offspring_list
 
     def selection(self, parent_subfitness, offspring_subfitness, parent_population, offspring_list, index_list):
         """
         select and overwrite
+        maybe have to check the architecture is valid or not--> for now, there is no need to check this problem
         """
         new_fitness=parent_subfitness
         for i in range(len(parent_subfitness)):
@@ -127,9 +145,9 @@ class ASAGA_Searcher():
         """
         architecture_loss=[]
         for index, architecture in enumerate(architecture_list):
-            nas_choice=architecture
-            self.model.set_choice(nas_choice)
+            self.model.set_choice(architecture)
             y_pred = self.model.predict(val_loader)
+            # denormalized
             y_pred=y_pred*self.config["dataset"]["volume_train_max"]
             loss_rmse = eval_rmse(self.val_label, y_pred, self.threshold)
             architecture_loss.append(loss_rmse)
