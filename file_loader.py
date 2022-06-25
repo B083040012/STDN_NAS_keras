@@ -47,12 +47,12 @@ class STDN_fileloader:
             print("Att-lstm seq_len must be odd!")
             raise Exception
 
-        if datatype == "train" or "validation":
+        if datatype == "train":
             self.load_train()
             data = self.volume_train
             flow_data = self.flow_train
             weather_data = self.weather_train
-        elif datatype == "test":
+        elif datatype == "validation" or "test":
             self.load_test()
             data = self.volume_test
             flow_data = self.flow_test
@@ -95,8 +95,8 @@ class STDN_fileloader:
         # time_range_list=sorted([hour+date*48-1 for hour in range(18, 35) for date in range(39,40)])
 
         elif datatype=='validation':
-            time_range_list=sorted([hour+date*48 for hour in range(18, 35) for date in range(0,40) if hour+date*48 >= time_start])
-            time_range_list=sorted(random.sample(time_range_list, int(len(time_range_list)*0.1)))
+            time_range_list=sorted([hour+date*48 for hour in range(18, 35) for date in range(0,20) if hour+date*48 >= time_start])
+            time_range_list=sorted(random.sample(time_range_list, int(len(time_range_list)*0.2)))
         # elif datatype == 'test':
         #     time_range_list = sorted([hour+date*48-1 for hour in range(18, 35) for date in range(19,20)])
         volume_type = data.shape[-1]
