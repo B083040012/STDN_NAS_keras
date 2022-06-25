@@ -46,18 +46,24 @@ class STDN_NAS(keras.Model):
         self.flow_convs_list_time1=[]
         self.flow_convs_list_time2=[]
         for ts in range(self.lstm_seq_len):
+            self.nbhd_convs_list_time0.append([])
+            self.nbhd_convs_list_time1.append([])
+            self.nbhd_convs_list_time2.append([])
+            self.flow_convs_list_time0.append([])
+            self.flow_convs_list_time1.append([])
+            self.flow_convs_list_time2.append([])
             for kernel_size in self.kernel_list:
-                self.nbhd_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                self.nbhd_convs_list_time0[ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
                                                     name = "nbhd_convs_time0_{0}".format(ts+1)))
-                self.nbhd_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                self.nbhd_convs_list_time1[ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
                                                     name = "nbhd_convs_time1_{0}".format(ts+1)))
-                self.nbhd_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                self.nbhd_convs_list_time2[ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
                                                     name = "nbhd_convs_time2_{0}".format(ts+1)))
-                self.flow_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                self.flow_convs_list_time0[ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
                                                     name = "flow_convs_time0_{0}".format(ts+1)))
-                self.flow_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                self.flow_convs_list_time1[ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
                                                     name = "flow_convs_time1_{0}".format(ts+1)))
-                self.flow_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
+                self.flow_convs_list_time2[ts].append(Conv2D(filters = 64, kernel_size = (kernel_size, kernel_size), padding="same", \
                                                     name = "flow_convs_time2_{0}".format(ts+1)))
 
         # nbhd / flow relu activation function in short-term part
@@ -68,24 +74,30 @@ class STDN_NAS(keras.Model):
         self.flow_relu_list_time1=[]
         self.flow_relu_list_time2=[]
         for ts in range(self.lstm_seq_len):
-            self.nbhd_relu_list_time0.append(ReLU(name = "nbhd_relu_time0_{0}".format(ts+1)))
-            self.nbhd_relu_list_time0.append(ReLU(max_value = 6.0, name = "nbhd_relu6_time0_{0}".format(ts+1)))
-            self.nbhd_relu_list_time0.append(PReLU(name = "nbhd_prelu_time0_{0}".format(ts+1)))
-            self.nbhd_relu_list_time1.append(ReLU(name = "nbhd_relu_time1_{0}".format(ts+1)))
-            self.nbhd_relu_list_time1.append(ReLU(max_value = 6.0, name = "nbhd_relu6_time1_{0}".format(ts+1)))
-            self.nbhd_relu_list_time1.append(PReLU(name = "nbhd_prelu_time1_{0}".format(ts+1)))
-            self.nbhd_relu_list_time2.append(ReLU(name = "nbhd_relu_time2_{0}".format(ts+1)))
-            self.nbhd_relu_list_time2.append(ReLU(max_value = 6.0, name = "nbhd_relu6_time2_{0}".format(ts+1)))
-            self.nbhd_relu_list_time2.append(PReLU(name = "nbhd_prelu_time2_{0}".format(ts+1)))
-            self.flow_relu_list_time0.append(ReLU(name = "flow_relu_time0_{0}".format(ts+1)))
-            self.flow_relu_list_time0.append(ReLU(max_value = 6.0, name = "flow_relu6_time0_{0}".format(ts+1)))
-            self.flow_relu_list_time0.append(PReLU(name = "flow_prelu_time0_{0}".format(ts+1)))
-            self.flow_relu_list_time1.append(ReLU(name = "flow_relu_time1_{0}".format(ts+1)))
-            self.flow_relu_list_time1.append(ReLU(max_value = 6.0, name = "flow_relu6_time1_{0}".format(ts+1)))
-            self.flow_relu_list_time1.append(PReLU(name = "flow_prelu_time1_{0}".format(ts+1)))
-            self.flow_relu_list_time2.append(ReLU(name = "flow_relu_time2_{0}".format(ts+1)))
-            self.flow_relu_list_time2.append(ReLU(max_value = 6.0, name = "flow_relu6_time2_{0}".format(ts+1)))
-            self.flow_relu_list_time2.append(PReLU(name = "flow_prelu_time2_{0}".format(ts+1)))
+            self.nbhd_relu_list_time0.append([])
+            self.nbhd_relu_list_time1.append([])
+            self.nbhd_relu_list_time2.append([])
+            self.flow_relu_list_time0.append([])
+            self.flow_relu_list_time1.append([])
+            self.flow_relu_list_time2.append([])
+            self.nbhd_relu_list_time0[ts].append(ReLU(name = "nbhd_relu_time0_{0}".format(ts+1)))
+            self.nbhd_relu_list_time0[ts].append(ReLU(max_value = 6.0, name = "nbhd_relu6_time0_{0}".format(ts+1)))
+            self.nbhd_relu_list_time0[ts].append(PReLU(name = "nbhd_prelu_time0_{0}".format(ts+1)))
+            self.nbhd_relu_list_time1[ts].append(ReLU(name = "nbhd_relu_time1_{0}".format(ts+1)))
+            self.nbhd_relu_list_time1[ts].append(ReLU(max_value = 6.0, name = "nbhd_relu6_time1_{0}".format(ts+1)))
+            self.nbhd_relu_list_time1[ts].append(PReLU(name = "nbhd_prelu_time1_{0}".format(ts+1)))
+            self.nbhd_relu_list_time2[ts].append(ReLU(name = "nbhd_relu_time2_{0}".format(ts+1)))
+            self.nbhd_relu_list_time2[ts].append(ReLU(max_value = 6.0, name = "nbhd_relu6_time2_{0}".format(ts+1)))
+            self.nbhd_relu_list_time2[ts].append(PReLU(name = "nbhd_prelu_time2_{0}".format(ts+1)))
+            self.flow_relu_list_time0[ts].append(ReLU(name = "flow_relu_time0_{0}".format(ts+1)))
+            self.flow_relu_list_time0[ts].append(ReLU(max_value = 6.0, name = "flow_relu6_time0_{0}".format(ts+1)))
+            self.flow_relu_list_time0[ts].append(PReLU(name = "flow_prelu_time0_{0}".format(ts+1)))
+            self.flow_relu_list_time1[ts].append(ReLU(name = "flow_relu_time1_{0}".format(ts+1)))
+            self.flow_relu_list_time1[ts].append(ReLU(max_value = 6.0, name = "flow_relu6_time1_{0}".format(ts+1)))
+            self.flow_relu_list_time1[ts].append(PReLU(name = "flow_prelu_time1_{0}".format(ts+1)))
+            self.flow_relu_list_time2[ts].append(ReLU(name = "flow_relu_time2_{0}".format(ts+1)))
+            self.flow_relu_list_time2[ts].append(ReLU(max_value = 6.0, name = "flow_relu6_time2_{0}".format(ts+1)))
+            self.flow_relu_list_time2[ts].append(PReLU(name = "flow_prelu_time2_{0}".format(ts+1)))
 
 
         # nbhd / flow pooling layer in the short-term part
@@ -96,31 +108,55 @@ class STDN_NAS(keras.Model):
         self.flow_pooling_list_time1=[]
         self.flow_pooling_list_time2=[]
         for ts in range(self.lstm_seq_len):
+            self.nbhd_pooling_list_time0.append([])
+            self.nbhd_pooling_list_time1.append([])
+            self.nbhd_pooling_list_time2.append([])
+            self.flow_pooling_list_time0.append([])
+            self.flow_pooling_list_time1.append([])
+            self.flow_pooling_list_time2.append([])
             for pooling_size in self.pool_size_list:
-                self.nbhd_pooling_list_time0.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time0[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_max_pooling_time0_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time0.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time0[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_avg_pooling_time0_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time1.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time1[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_max_pooling_time1_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time1.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time1[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_avg_pooling_time1_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time2.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time2[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_max_pooling_time0_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time2.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time2[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_avg_pooling_time0_{0}".format(ts+1)))
-                self.flow_pooling_list_time0.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time0[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_max_pooling_time0_{0}".format(ts+1)))
-                self.flow_pooling_list_time0.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time0[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_avg_pooling_time0_{0}".format(ts+1)))
-                self.flow_pooling_list_time1.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time1[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_max_pooling_time1_{0}".format(ts+1)))
-                self.flow_pooling_list_time1.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time1[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_avg_pooling_time1_{0}".format(ts+1)))
-                self.flow_pooling_list_time2.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time2[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_max_pooling_time2_{0}".format(ts+1)))
-                self.flow_pooling_list_time2.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time2[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_avg_pooling_time2_{0}".format(ts+1)))
+
+        # flow gate in the short-term part
+        self.flow_gate_time0=[]
+        self.flow_gate_time1=[]
+        self.flow_gate_time2=[]
+        for ts in range(self.lstm_seq_len):
+            self.flow_gate_time0.append([])
+            self.flow_gate_time1.append([])
+            self.flow_gate_time2.append([])
+            self.flow_gate_time0[ts].append(Activation("sigmoid", name = "flow_gate_sigmoid_0_{0}".format(ts+1)))
+            self.flow_gate_time0[ts].append(ReLU(max_value = 6.0, name = "flow_gate_relu6_0_{0}".format(ts+1)))
+            self.flow_gate_time0[ts].append(Activation("tanh", name = "flow_gate_tanh_0_{0}".format(ts+1)))
+            self.flow_gate_time1[ts].append(Activation("sigmoid", name = "flow_gate_sigmoid_1_{0}".format(ts+1)))
+            self.flow_gate_time1[ts].append(ReLU(max_value = 6.0, name = "flow_gate_relu6_1_{0}".format(ts+1)))
+            self.flow_gate_time1[ts].append(Activation("tanh", name = "flow_gate_tanh_1_{0}".format(ts+1)))
+            self.flow_gate_time2[ts].append(Activation("sigmoid", name = "flow_gate_sigmoid_2_{0}".format(ts+1)))
+            self.flow_gate_time2[ts].append(ReLU(max_value = 6.0, name = "flow_gate_relu6_2_{0}".format(ts+1)))
+            self.flow_gate_time2[ts].append(Activation("tanh", name = "flow_gate_tanh_2_{0}".format(ts+1)))
 
 
         # dense layer in the short-term part
@@ -218,6 +254,28 @@ class STDN_NAS(keras.Model):
                     self.att_flow_pooling_list_time2[att][ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                                         name = "att_flow_avg_pooling_time2_{0}_{1}".format(att+1, ts+1)))
 
+        # flow gate in att portion
+        self.att_flow_gate_time0=[]
+        self.att_flow_gate_time1=[]
+        self.att_flow_gate_time2=[]
+        for att in range(self.att_lstm_num):
+            self.att_flow_gate_time0.append([])
+            self.att_flow_gate_time1.append([])
+            self.att_flow_gate_time2.append([])
+            for ts in range(self.att_lstm_seq_len):
+                self.att_flow_gate_time0[att].append([])
+                self.att_flow_gate_time1[att].append([])
+                self.att_flow_gate_time2[att].append([])
+                self.att_flow_gate_time0[att][ts].append(Activation("sigmoid", name = "att_flow_gate_sigmoid_0_{0}".format(ts+1)))
+                self.att_flow_gate_time0[att][ts].append(ReLU(max_value = 6.0, name = "att_flow_gate_relu6_0_{0}".format(ts+1)))
+                self.att_flow_gate_time0[att][ts].append(Activation("tanh", name = "att_flow_gate_tanh_0_{0}".format(ts+1)))
+                self.att_flow_gate_time1[att][ts].append(Activation("sigmoid", name = "att_flow_gate_sigmoid_1_{0}".format(ts+1)))
+                self.att_flow_gate_time1[att][ts].append(ReLU(max_value = 6.0, name = "att_flow_gate_relu6_1_{0}".format(ts+1)))
+                self.att_flow_gate_time1[att][ts].append(Activation("tanh", name = "att_flow_gate_tanh_1_{0}".format(ts+1)))
+                self.att_flow_gate_time2[att][ts].append(Activation("sigmoid", name = "att_flow_gate_sigmoid_2_{0}".format(ts+1)))
+                self.att_flow_gate_time2[att][ts].append(ReLU(max_value = 6.0, name = "att_flow_gate_relu6_2_{0}".format(ts+1)))
+                self.att_flow_gate_time2[att][ts].append(Activation("tanh", name = "att_flow_gate_tanh_2_{0}".format(ts+1)))
+
         # nbhd / flow relu layers in the att portion
         self.att_nbhd_relu_list_time0=[]
         self.att_nbhd_relu_list_time1=[]
@@ -283,16 +341,19 @@ class STDN_NAS(keras.Model):
 
         num_choice=3
         num_layers=6
-        # conv size choice
+        # conv size choice: [1,2,3]: 3 choices
         short_conv_choice = list(np.random.randint(num_choice, size=num_layers*self.lstm_seq_len))
         att_conv_choice = list(np.random.randint(num_choice, size=num_layers*self.att_lstm_num*self.att_lstm_seq_len))
         # pooling choice: [2,3,4] pool_size for max/avg pooling and no pooling: 3*2+1 choices
         short_pooling_choice = list(np.random.randint(num_choice*2+1, size=num_layers*self.lstm_seq_len))
         att_pooling_choice = list(np.random.randint(num_choice*2+1, size=num_layers*self.att_lstm_num*self.att_lstm_seq_len))
-        # relu choice: relu, relu6, prelu
+        # relu choice: relu, relu6, prelu: 3 choices
         short_relu_choice = list(np.random.randint(num_choice, size=num_layers*self.lstm_seq_len))
         att_relu_choice = list(np.random.randint(num_choice, size=num_layers*self.att_lstm_num*self.att_lstm_seq_len))
-        self.choice=[short_conv_choice, att_conv_choice, short_pooling_choice, att_pooling_choice, short_relu_choice, att_relu_choice]
+        # flow gate choice: sigmoid, relu6, tanh: 3 choices
+        flow_gate_choice = list(np.random.randint(num_choice, size=3*self.lstm_seq_len))
+        att_flow_gate_choice = list(np.random.randint(num_choice, size=3*self.att_lstm_num*self.att_lstm_seq_len))
+        self.choice=[short_conv_choice, att_conv_choice, short_pooling_choice, att_pooling_choice, short_relu_choice, att_relu_choice, flow_gate_choice, att_flow_gate_choice]
 
         with tf.GradientTape() as tape:
             y_pred = self(x, training=True)  # Forward pass
@@ -339,44 +400,44 @@ class STDN_NAS(keras.Model):
 
         #1st level gate
         #nbhd cnn
-        nbhd_convs = [self.nbhd_convs_list_time0[self.choice[0][(self.lstm_seq_len-1)]](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_convs_list_time0[ts][self.choice[0][(self.lstm_seq_len*0)+ts]](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
         # nbhd pooling
-        nbhd_convs = [self.nbhd_pooling_list_time0[self.choice[2][self.lstm_seq_len-1]](nbhd_convs[ts]) \
-                        if self.choice[2][self.lstm_seq_len-1] < len(self.nbhd_pooling_list_time0) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_relu_list_time0[self.choice[4][self.lstm_seq_len-1]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_pooling_list_time0[ts][self.choice[2][(self.lstm_seq_len*0)+ts]](nbhd_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*0)+ts] < len(self.nbhd_pooling_list_time0[ts]) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_relu_list_time0[ts][self.choice[4][(self.lstm_seq_len*0)+ts]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
         #flow cnn
-        flow_convs = [self.flow_convs_list_time0[self.choice[0][(self.lstm_seq_len-1)+1]](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_convs_list_time0[ts][self.choice[0][(self.lstm_seq_len*1)+ts]](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
         # flow pooling
-        flow_convs = [self.flow_pooling_list_time0[self.choice[2][(self.lstm_seq_len-1)+1]](flow_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+1] < len(self.flow_pooling_list_time0) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_relu_list_time0[self.choice[4][(self.lstm_seq_len-1)+1]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_pooling_list_time0[ts][self.choice[2][(self.lstm_seq_len*1)+ts]](flow_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*1)+ts] < len(self.flow_pooling_list_time0[ts]) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_relu_list_time0[ts][self.choice[4][(self.lstm_seq_len*1)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         #flow gate
-        flow_gates = [Activation("sigmoid", name = "flow_gate0_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_gates = [self.flow_gate_time0[ts][self.choice[6][(self.lstm_seq_len*0)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
 
 
         #2nd level gate
-        nbhd_convs = [self.nbhd_convs_list_time1[self.choice[0][(self.lstm_seq_len-1)+2]](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_pooling_list_time1[self.choice[2][(self.lstm_seq_len-1)+2]](nbhd_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+2] < len(self.nbhd_pooling_list_time1) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_relu_list_time1[self.choice[4][(self.lstm_seq_len-1)+2]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_convs_list_time1[self.choice[0][(self.lstm_seq_len-1)+3]](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_pooling_list_time1[self.choice[2][(self.lstm_seq_len-1)+3]](flow_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+3] < len(self.flow_pooling_list_time1) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_relu_list_time1[self.choice[2][(self.lstm_seq_len-1)+3]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_gates = [Activation("sigmoid", name = "flow_gate1_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_convs_list_time1[ts][self.choice[0][(self.lstm_seq_len*2)+ts]](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_pooling_list_time1[ts][self.choice[2][(self.lstm_seq_len*2)+ts]](nbhd_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*2)+ts] < len(self.nbhd_pooling_list_time1[ts]) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_relu_list_time1[ts][self.choice[4][(self.lstm_seq_len*2)+ts]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_convs_list_time1[ts][self.choice[0][(self.lstm_seq_len*3)+ts]](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_pooling_list_time1[ts][self.choice[2][(self.lstm_seq_len*3)+ts]](flow_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*3)+ts] < len(self.flow_pooling_list_time1[ts]) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_relu_list_time1[ts][self.choice[4][(self.lstm_seq_len*3)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_gates = [self.flow_gate_time1[ts][self.choice[6][(self.lstm_seq_len*1)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
 
         #3rd level gate
-        nbhd_convs = [self.nbhd_convs_list_time2[self.choice[0][(self.lstm_seq_len-1)+4]](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_pooling_list_time2[self.choice[2][(self.lstm_seq_len-1)+4]](nbhd_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+4] < len(self.nbhd_pooling_list_time2) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_relu_list_time2[self.choice[4][(self.lstm_seq_len-1)+4]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_convs_list_time2[self.choice[0][(self.lstm_seq_len-1)+5]](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_pooling_list_time2[self.choice[2][(self.lstm_seq_len-1)+5]](flow_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+5] < len(self.flow_pooling_list_time2) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_relu_list_time2[self.choice[4][(self.lstm_seq_len-1)+5]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_gates = [Activation("sigmoid", name = "flow_gate2_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_convs_list_time2[ts][self.choice[0][(self.lstm_seq_len*4)+ts]](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_pooling_list_time2[ts][self.choice[2][(self.lstm_seq_len*4)+ts]](nbhd_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*4)+ts] < len(self.nbhd_pooling_list_time2[ts]) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_relu_list_time2[ts][self.choice[4][(self.lstm_seq_len*4)+ts]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_convs_list_time2[ts][self.choice[0][(self.lstm_seq_len*5)+ts]](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_pooling_list_time2[ts][self.choice[2][(self.lstm_seq_len*5)+ts]](flow_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*5)+ts] < len(self.flow_pooling_list_time2[ts]) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_relu_list_time2[ts][self.choice[4][(self.lstm_seq_len*5)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_gates = [self.flow_gate_time2[ts][self.choice[6][(self.lstm_seq_len*2)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
 
 
@@ -396,45 +457,47 @@ class STDN_NAS(keras.Model):
         lstm = self.short_term_lstm(lstm_input)
 
         #attention part
-        index_num = (self.att_lstm_num - 1)
-        index_len = (self.att_lstm_seq_len - 1)
-        att_nbhd_convs = [[self.att_nbhd_convs_list_time0[att][ts][self.choice[1][index_num*att + index_len*ts]](att_nbhd_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_pooling_list_time0[att][ts][self.choice[3][index_num*att + index_len*ts]](att_nbhd_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts] < len(self.att_nbhd_pooling_list_time0[att]) else att_nbhd_convs[att][ts] \
+        index_num = (self.att_lstm_num*6)
+        gate_index_num = (self.att_lstm_num*3)
+        index_len = (self.att_lstm_seq_len)
+
+        att_nbhd_convs = [[self.att_nbhd_convs_list_time0[att][ts][self.choice[1][(index_num*att) + (index_len*0) + ts]](att_nbhd_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_nbhd_convs = [[self.att_nbhd_pooling_list_time0[att][ts][self.choice[3][(index_num*att) + (index_len*0) + ts]](att_nbhd_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*0) + ts] < len(self.att_nbhd_pooling_list_time0[att]) else att_nbhd_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_relu_list_time0[att][ts][self.choice[5][index_num*att+index_len*ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_convs_list_time0[att][ts][self.choice[1][index_num*att + index_len*ts + 1]](att_flow_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_pooling_list_time0[att][ts][self.choice[3][index_num*att + index_len*ts + 1]](att_flow_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 1] < len(self.att_flow_pooling_list_time0[att]) else att_flow_convs[att][ts] \
+        att_nbhd_convs = [[self.att_nbhd_relu_list_time0[att][ts][self.choice[5][(index_num*att) + (index_len*0) + ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_convs_list_time0[att][ts][self.choice[1][(index_num*att) + (index_len*1) + ts]](att_flow_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_pooling_list_time0[att][ts][self.choice[3][(index_num*att) + (index_len*1) + ts]](att_flow_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*1) + ts] < len(self.att_flow_pooling_list_time0[att]) else att_flow_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_relu_list_time0[att][ts][self.choice[5][index_num*att+index_len*ts+1]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_gates = [[Activation("sigmoid", name = "att_flow_gate0_{0}_{1}".format(att+1, ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_relu_list_time0[att][ts][self.choice[5][(index_num*att) + (index_len*1) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_gates = [[self.att_flow_gate_time0[att][ts][self.choice[7][(gate_index_num*att) + (index_len*0) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
-        att_nbhd_convs = [[self.att_nbhd_convs_list_time1[att][ts][self.choice[1][index_num*att + index_len*ts + 2]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_pooling_list_time1[att][ts][self.choice[3][index_num*att + index_len*ts + 2]](att_nbhd_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 2] < len(self.att_nbhd_pooling_list_time1[att]) else att_nbhd_convs[att][ts] \
+        att_nbhd_convs = [[self.att_nbhd_convs_list_time1[att][ts][self.choice[1][(index_num*att) + (index_len*2) + ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_nbhd_convs = [[self.att_nbhd_pooling_list_time1[att][ts][self.choice[3][(index_num*att) + (index_len*2) + ts]](att_nbhd_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*2) + ts] < len(self.att_nbhd_pooling_list_time1[att]) else att_nbhd_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_relu_list_time1[att][ts][self.choice[5][index_num*att+index_len*ts+2]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_convs_list_time1[att][ts][self.choice[1][index_num*att + index_len*ts + 3]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_pooling_list_time1[att][ts][self.choice[3][index_num*att + index_len*ts + 3]](att_flow_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 3] < len(self.att_flow_pooling_list_time1[att]) else att_flow_convs[att][ts] \
+        att_nbhd_convs = [[self.att_nbhd_relu_list_time1[att][ts][self.choice[5][(index_num*att) + (index_len*2) + ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_convs_list_time1[att][ts][self.choice[1][(index_num*att) + (index_len*3) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_pooling_list_time1[att][ts][self.choice[3][(index_num*att) + (index_len*3) + ts]](att_flow_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*3) + ts] < len(self.att_flow_pooling_list_time1[att]) else att_flow_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_relu_list_time1[att][ts][self.choice[5][index_num*att+index_len*ts+3]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_gates = [[Activation("sigmoid", name = "att_flow_gate1_{0}_{1}".format(att+1, ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_relu_list_time1[att][ts][self.choice[5][(index_num*att) + (index_len*3) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_gates = [[self.att_flow_gate_time1[att][ts][self.choice[7][(gate_index_num*att) + (index_len*1) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
-        att_nbhd_convs = [[self.att_nbhd_convs_list_time2[att][ts][self.choice[1][index_num*att + index_len*ts + 4]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_pooling_list_time2[att][ts][self.choice[3][index_num*att + index_len*ts + 4]](att_nbhd_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 4] < len(self.att_nbhd_pooling_list_time2[att]) else att_nbhd_convs[att][ts] \
+        att_nbhd_convs = [[self.att_nbhd_convs_list_time2[att][ts][self.choice[1][(index_num*att) + (index_len*4)+ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_nbhd_convs = [[self.att_nbhd_pooling_list_time2[att][ts][self.choice[3][(index_num*att) + (index_len*4) + ts]](att_nbhd_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*4) + ts] < len(self.att_nbhd_pooling_list_time2[att]) else att_nbhd_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_relu_list_time2[att][ts][self.choice[5][index_num*att+index_len*ts+4]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_convs_list_time2[att][ts][self.choice[1][index_num*att + index_len*ts + 5]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_pooling_list_time2[att][ts][self.choice[3][index_num*att + index_len*ts + 5]](att_flow_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 5] < len(self.att_flow_pooling_list_time2[att]) else att_flow_convs[att][ts] \
+        att_nbhd_convs = [[self.att_nbhd_relu_list_time2[att][ts][self.choice[5][(index_num*att) + (index_len*4) + ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_convs_list_time2[att][ts][self.choice[1][(index_num*att) + (index_len*5)+ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_pooling_list_time2[att][ts][self.choice[3][(index_num*att) + (index_len*5) + ts]](att_flow_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*5) + ts] < len(self.att_flow_pooling_list_time2[att]) else att_flow_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_relu_list_time2[att][ts][self.choice[5][index_num*att+index_len*ts+5]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_gates = [[Activation("sigmoid", name = "att_flow_gate2_{0}_{1}".format(att+1, ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_relu_list_time2[att][ts][self.choice[5][(index_num*att) + (index_len*5) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_gates = [[self.att_flow_gate_time2[att][ts][self.choice[7][(gate_index_num*att) + (index_len*2) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
         att_nbhd_vecs = [[Flatten(name = "att_nbhd_flatten_time_{0}_{1}".format(att+1,ts+1))(att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
@@ -496,18 +559,18 @@ class STDN_Network(keras.Model):
         self.flow_convs_list_time1=[]
         self.flow_convs_list_time2=[]
         for ts in range(self.lstm_seq_len):
-            index = (self.lstm_seq_len-1)
-            self.nbhd_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts]], self.kernel_list[choice[0][index*ts]]), \
+            index = (self.lstm_seq_len)
+            self.nbhd_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][(index*0) + ts]], self.kernel_list[choice[0][(index*0) + ts]]), \
                                                 padding="same", name = "nbhd_convs_time0_{0}".format(ts+1)))
-            self.nbhd_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+1]], self.kernel_list[choice[0][index*ts+1]]), \
+            self.nbhd_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][(index*2) + ts]], self.kernel_list[choice[0][(index*2) + ts]]), \
                                                 padding="same", name = "nbhd_convs_time1_{0}".format(ts+1)))
-            self.nbhd_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+2]], self.kernel_list[choice[0][index*ts+2]]), \
+            self.nbhd_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][(index*4) + ts]], self.kernel_list[choice[0][(index*4) + ts]]), \
                                                 padding="same", name = "nbhd_convs_time2_{0}".format(ts+1)))
-            self.flow_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+3]], self.kernel_list[choice[0][index*ts+3]]), \
+            self.flow_convs_list_time0.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][(index*1) + ts]], self.kernel_list[choice[0][(index*1) + ts]]), \
                                                 padding="same", name = "flow_convs_time0_{0}".format(ts+1)))
-            self.flow_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+4]], self.kernel_list[choice[0][index*ts+4]]), \
+            self.flow_convs_list_time1.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][(index*3) + ts]], self.kernel_list[choice[0][(index*3) + ts]]), \
                                                 padding="same", name = "flow_convs_time1_{0}".format(ts+1)))
-            self.flow_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][index*ts+5]], self.kernel_list[choice[0][index*ts+5]]), \
+            self.flow_convs_list_time2.append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[0][(index*5) + ts]], self.kernel_list[choice[0][(index*5) + ts]]), \
                                                 padding="same", name = "flow_convs_time2_{0}".format(ts+1)))
 
         # nbhd / flow relu activation function in short-term part
@@ -518,25 +581,48 @@ class STDN_Network(keras.Model):
         self.flow_relu_list_time1=[]
         self.flow_relu_list_time2=[]
         for ts in range(self.lstm_seq_len):
-            self.nbhd_relu_list_time0.append(ReLU(name = "nbhd_relu_time0_{0}".format(ts+1)))
-            self.nbhd_relu_list_time0.append(ReLU(max_value = 6.0, name = "nbhd_relu6_time0_{0}".format(ts+1)))
-            self.nbhd_relu_list_time0.append(PReLU(name = "nbhd_prelu_time0_{0}".format(ts+1)))
-            self.nbhd_relu_list_time1.append(ReLU(name = "nbhd_relu_time1_{0}".format(ts+1)))
-            self.nbhd_relu_list_time1.append(ReLU(max_value = 6.0, name = "nbhd_relu6_time1_{0}".format(ts+1)))
-            self.nbhd_relu_list_time1.append(PReLU(name = "nbhd_prelu_time1_{0}".format(ts+1)))
-            self.nbhd_relu_list_time2.append(ReLU(name = "nbhd_relu_time2_{0}".format(ts+1)))
-            self.nbhd_relu_list_time2.append(ReLU(max_value = 6.0, name = "nbhd_relu6_time2_{0}".format(ts+1)))
-            self.nbhd_relu_list_time2.append(PReLU(name = "nbhd_prelu_time2_{0}".format(ts+1)))
-            self.flow_relu_list_time0.append(ReLU(name = "flow_relu_time0_{0}".format(ts+1)))
-            self.flow_relu_list_time0.append(ReLU(max_value = 6.0, name = "flow_relu6_time0_{0}".format(ts+1)))
-            self.flow_relu_list_time0.append(PReLU(name = "flow_prelu_time0_{0}".format(ts+1)))
-            self.flow_relu_list_time1.append(ReLU(name = "flow_relu_time1_{0}".format(ts+1)))
-            self.flow_relu_list_time1.append(ReLU(max_value = 6.0, name = "flow_relu6_time1_{0}".format(ts+1)))
-            self.flow_relu_list_time1.append(PReLU(name = "flow_prelu_time1_{0}".format(ts+1)))
-            self.flow_relu_list_time2.append(ReLU(name = "flow_relu_time2_{0}".format(ts+1)))
-            self.flow_relu_list_time2.append(ReLU(max_value = 6.0, name = "flow_relu6_time2_{0}".format(ts+1)))
-            self.flow_relu_list_time2.append(PReLU(name = "flow_prelu_time2_{0}".format(ts+1)))
+            self.nbhd_relu_list_time0.append([])
+            self.nbhd_relu_list_time1.append([])
+            self.nbhd_relu_list_time2.append([])
+            self.flow_relu_list_time0.append([])
+            self.flow_relu_list_time1.append([])
+            self.flow_relu_list_time2.append([])
+            self.nbhd_relu_list_time0[ts].append(ReLU(name = "nbhd_relu_time0_{0}".format(ts+1)))
+            self.nbhd_relu_list_time0[ts].append(ReLU(max_value = 6.0, name = "nbhd_relu6_time0_{0}".format(ts+1)))
+            self.nbhd_relu_list_time0[ts].append(PReLU(name = "nbhd_prelu_time0_{0}".format(ts+1)))
+            self.nbhd_relu_list_time1[ts].append(ReLU(name = "nbhd_relu_time1_{0}".format(ts+1)))
+            self.nbhd_relu_list_time1[ts].append(ReLU(max_value = 6.0, name = "nbhd_relu6_time1_{0}".format(ts+1)))
+            self.nbhd_relu_list_time1[ts].append(PReLU(name = "nbhd_prelu_time1_{0}".format(ts+1)))
+            self.nbhd_relu_list_time2[ts].append(ReLU(name = "nbhd_relu_time2_{0}".format(ts+1)))
+            self.nbhd_relu_list_time2[ts].append(ReLU(max_value = 6.0, name = "nbhd_relu6_time2_{0}".format(ts+1)))
+            self.nbhd_relu_list_time2[ts].append(PReLU(name = "nbhd_prelu_time2_{0}".format(ts+1)))
+            self.flow_relu_list_time0[ts].append(ReLU(name = "flow_relu_time0_{0}".format(ts+1)))
+            self.flow_relu_list_time0[ts].append(ReLU(max_value = 6.0, name = "flow_relu6_time0_{0}".format(ts+1)))
+            self.flow_relu_list_time0[ts].append(PReLU(name = "flow_prelu_time0_{0}".format(ts+1)))
+            self.flow_relu_list_time1[ts].append(ReLU(name = "flow_relu_time1_{0}".format(ts+1)))
+            self.flow_relu_list_time1[ts].append(ReLU(max_value = 6.0, name = "flow_relu6_time1_{0}".format(ts+1)))
+            self.flow_relu_list_time1[ts].append(PReLU(name = "flow_prelu_time1_{0}".format(ts+1)))
+            self.flow_relu_list_time2[ts].append(ReLU(name = "flow_relu_time2_{0}".format(ts+1)))
+            self.flow_relu_list_time2[ts].append(ReLU(max_value = 6.0, name = "flow_relu6_time2_{0}".format(ts+1)))
+            self.flow_relu_list_time2[ts].append(PReLU(name = "flow_prelu_time2_{0}".format(ts+1)))
 
+        # flow gate in the short-term part
+        self.flow_gate_time0=[]
+        self.flow_gate_time1=[]
+        self.flow_gate_time2=[]
+        for ts in range(self.lstm_seq_len):
+            self.flow_gate_time0.append([])
+            self.flow_gate_time1.append([])
+            self.flow_gate_time2.append([])
+            self.flow_gate_time0[ts].append(Activation("sigmoid", name = "flow_gate_sigmoid_0_{0}".format(ts+1)))
+            self.flow_gate_time0[ts].append(ReLU(max_value = 6.0, name = "flow_gate_relu6_0_{0}".format(ts+1)))
+            self.flow_gate_time0[ts].append(Activation("tanh", name = "flow_gate_tanh_0_{0}".format(ts+1)))
+            self.flow_gate_time1[ts].append(Activation("sigmoid", name = "flow_gate_sigmoid_1_{0}".format(ts+1)))
+            self.flow_gate_time1[ts].append(ReLU(max_value = 6.0, name = "flow_gate_relu6_1_{0}".format(ts+1)))
+            self.flow_gate_time1[ts].append(Activation("tanh", name = "flow_gate_tanh_1_{0}".format(ts+1)))
+            self.flow_gate_time2[ts].append(Activation("sigmoid", name = "flow_gate_sigmoid_2_{0}".format(ts+1)))
+            self.flow_gate_time2[ts].append(ReLU(max_value = 6.0, name = "flow_gate_relu6_2_{0}".format(ts+1)))
+            self.flow_gate_time2[ts].append(Activation("tanh", name = "flow_gate_tanh_2_{0}".format(ts+1)))
 
         # nbhd / flow pooling layer in the short-term part
         self.nbhd_pooling_list_time0=[]
@@ -546,30 +632,36 @@ class STDN_Network(keras.Model):
         self.flow_pooling_list_time1=[]
         self.flow_pooling_list_time2=[]
         for ts in range(self.lstm_seq_len):
+            self.nbhd_pooling_list_time0.append([])
+            self.nbhd_pooling_list_time1.append([])
+            self.nbhd_pooling_list_time2.append([])
+            self.flow_pooling_list_time0.append([])
+            self.flow_pooling_list_time1.append([])
+            self.flow_pooling_list_time2.append([])
             for pooling_size in self.pool_size_list:
-                self.nbhd_pooling_list_time0.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time0[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_max_pooling_time0_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time0.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time0[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_avg_pooling_time0_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time1.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time1[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_max_pooling_time1_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time1.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time1[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_avg_pooling_time1_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time2.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time2[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_max_pooling_time0_{0}".format(ts+1)))
-                self.nbhd_pooling_list_time2.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.nbhd_pooling_list_time2[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "nbhd_avg_pooling_time0_{0}".format(ts+1)))
-                self.flow_pooling_list_time0.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time0[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_max_pooling_time0_{0}".format(ts+1)))
-                self.flow_pooling_list_time0.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time0[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_avg_pooling_time0_{0}".format(ts+1)))
-                self.flow_pooling_list_time1.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time1[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_max_pooling_time1_{0}".format(ts+1)))
-                self.flow_pooling_list_time1.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time1[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_avg_pooling_time1_{0}".format(ts+1)))
-                self.flow_pooling_list_time2.append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time2[ts].append(MaxPooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_max_pooling_time2_{0}".format(ts+1)))
-                self.flow_pooling_list_time2.append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
+                self.flow_pooling_list_time2[ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                     name = "flow_avg_pooling_time2_{0}".format(ts+1)))
 
         # dense layer in the short-term part
@@ -595,20 +687,20 @@ class STDN_Network(keras.Model):
             self.att_flow_convs_list_time1.append([])
             self.att_flow_convs_list_time2.append([])
             for ts in range(self.att_lstm_seq_len):
-                index_num = (self.att_lstm_num - 1)
-                index_len = (self.att_lstm_seq_len - 1)
-                self.att_nbhd_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts]], \
-                                            self.kernel_list[choice[1][index_num*att+index_len*ts]]), padding="same", name = "att_nbhd_convs_time0_{0}_{1}".format(att+1,ts+1)))
-                self.att_nbhd_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+1]], \
-                                            self.kernel_list[choice[1][index_num*att+index_len*ts+1]]), padding="same", name = "att_nbhd_convs_time1_{0}_{1}".format(att+1,ts+1)))
-                self.att_nbhd_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+2]], \
-                                            self.kernel_list[choice[1][index_num*att+index_len*ts]]), padding="same", name = "att_nbhd_convs_time2_{0}_{1}".format(att+1,ts+1)))
-                self.att_flow_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+3]], \
-                                            self.kernel_list[choice[1][index_num*att+index_len*ts+3]]), padding="same", name = "att_flow_convs_time0_{0}_{1}".format(att+1,ts+1)))
-                self.att_flow_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+4]], \
-                                            self.kernel_list[choice[1][index_num*att+index_len*ts+4]]), padding="same", name = "att_flow_convs_time1_{0}_{1}".format(att+1,ts+1)))
-                self.att_flow_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][index_num*att+index_len*ts+5]], \
-                                            self.kernel_list[choice[1][index_num*att+index_len*ts+5]]), padding="same", name = "att_flow_convs_time2_{0}_{1}".format(att+1,ts+1)))
+                index_num = (self.att_lstm_num*6)
+                index_len = (self.att_lstm_seq_len)
+                self.att_nbhd_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][(index_num*att) + (index_len*0) + ts]], \
+                                            self.kernel_list[choice[1][(index_num*att) + (index_len*0) + ts]]), padding="same", name = "att_nbhd_convs_time0_{0}_{1}".format(att+1,ts+1)))
+                self.att_nbhd_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][(index_num*att) + (index_len*2) + ts]], \
+                                            self.kernel_list[choice[1][(index_num*att) + (index_len*2) + ts]]), padding="same", name = "att_nbhd_convs_time1_{0}_{1}".format(att+1,ts+1)))
+                self.att_nbhd_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][(index_num*att) + (index_len*4) + ts]], \
+                                            self.kernel_list[choice[1][(index_num*att) + (index_len*4) + ts]]), padding="same", name = "att_nbhd_convs_time2_{0}_{1}".format(att+1,ts+1)))
+                self.att_flow_convs_list_time0[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][(index_num*att) + (index_len*1) + ts]], \
+                                            self.kernel_list[choice[1][(index_num*att) + (index_len*1) + ts]]), padding="same", name = "att_flow_convs_time0_{0}_{1}".format(att+1,ts+1)))
+                self.att_flow_convs_list_time1[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][(index_num*att) + (index_len*3) + ts]], \
+                                            self.kernel_list[choice[1][(index_num*att) + (index_len*3) + ts]]), padding="same", name = "att_flow_convs_time1_{0}_{1}".format(att+1,ts+1)))
+                self.att_flow_convs_list_time2[att].append(Conv2D(filters = 64, kernel_size = (self.kernel_list[choice[1][(index_num*att) + (index_len*5) + ts]], \
+                                            self.kernel_list[choice[1][(index_num*att) + (index_len*5) + ts]]), padding="same", name = "att_flow_convs_time2_{0}_{1}".format(att+1,ts+1)))
 
         # nbhd / flow pooling layers in the att portion
         self.att_nbhd_pooling_list_time0=[]
@@ -656,6 +748,28 @@ class STDN_Network(keras.Model):
                                                                         name = "att_flow_max_pooling_time2_{0}_{1}".format(att+1, ts+1)))
                     self.att_flow_pooling_list_time2[att][ts].append(AveragePooling2D(pool_size = (pooling_size, pooling_size), strides = (1,1), padding = 'same', \
                                                                         name = "att_flow_avg_pooling_time2_{0}_{1}".format(att+1, ts+1)))
+
+        # flow gate in att portion
+        self.att_flow_gate_time0=[]
+        self.att_flow_gate_time1=[]
+        self.att_flow_gate_time2=[]
+        for att in range(self.att_lstm_num):
+            self.att_flow_gate_time0.append([])
+            self.att_flow_gate_time1.append([])
+            self.att_flow_gate_time2.append([])
+            for ts in range(self.att_lstm_seq_len):
+                self.att_flow_gate_time0[att].append([])
+                self.att_flow_gate_time1[att].append([])
+                self.att_flow_gate_time2[att].append([])
+                self.att_flow_gate_time0[att][ts].append(Activation("sigmoid", name = "att_flow_gate_sigmoid_0_{0}".format(ts+1)))
+                self.att_flow_gate_time0[att][ts].append(ReLU(max_value = 6.0, name = "att_flow_gate_relu6_0_{0}".format(ts+1)))
+                self.att_flow_gate_time0[att][ts].append(Activation("tanh", name = "att_flow_gate_tanh_0_{0}".format(ts+1)))
+                self.att_flow_gate_time1[att][ts].append(Activation("sigmoid", name = "att_flow_gate_sigmoid_1_{0}".format(ts+1)))
+                self.att_flow_gate_time1[att][ts].append(ReLU(max_value = 6.0, name = "att_flow_gate_relu6_1_{0}".format(ts+1)))
+                self.att_flow_gate_time1[att][ts].append(Activation("tanh", name = "att_flow_gate_tanh_1_{0}".format(ts+1)))
+                self.att_flow_gate_time2[att][ts].append(Activation("sigmoid", name = "att_flow_gate_sigmoid_2_{0}".format(ts+1)))
+                self.att_flow_gate_time2[att][ts].append(ReLU(max_value = 6.0, name = "att_flow_gate_relu6_2_{0}".format(ts+1)))
+                self.att_flow_gate_time2[att][ts].append(Activation("tanh", name = "att_flow_gate_tanh_2_{0}".format(ts+1)))
 
         # nbhd / flow relu layers in the att portion
         self.att_nbhd_relu_list_time0=[]
@@ -753,40 +867,40 @@ class STDN_Network(keras.Model):
         # 1st level gate
         #nbhd cnn
         nbhd_convs = [self.nbhd_convs_list_time0[ts](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_pooling_list_time0[self.choice[2][self.lstm_seq_len-1]](nbhd_convs[ts]) \
-                        if self.choice[2][self.lstm_seq_len-1] < len(self.nbhd_pooling_list_time0) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_relu_list_time0[self.choice[4][self.lstm_seq_len-1]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_pooling_list_time0[ts][self.choice[2][(self.lstm_seq_len*0)+ts]](nbhd_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*0)+ts] < len(self.nbhd_pooling_list_time0[ts]) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_relu_list_time0[ts][self.choice[4][(self.lstm_seq_len*0)+ts]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
         #flow cnn
         flow_convs = [self.flow_convs_list_time0[ts](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_pooling_list_time0[self.choice[2][(self.lstm_seq_len-1)+1]](flow_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+1] < len(self.flow_pooling_list_time0) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_relu_list_time0[self.choice[4][(self.lstm_seq_len-1)+1]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_pooling_list_time0[ts][self.choice[2][(self.lstm_seq_len*1)+ts]](flow_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*1)+ts] < len(self.flow_pooling_list_time0[ts]) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_relu_list_time0[ts][self.choice[4][(self.lstm_seq_len*1)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         #flow gate
-        flow_gates = [Activation("sigmoid", name = "flow_gate0_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_gates = [self.flow_gate_time0[ts][self.choice[6][(self.lstm_seq_len*0)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
 
         #2nd level gate
         nbhd_convs = [self.nbhd_convs_list_time1[ts](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_pooling_list_time1[self.choice[2][(self.lstm_seq_len-1)+2]](nbhd_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+2] < len(self.nbhd_pooling_list_time1) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_relu_list_time1[self.choice[4][(self.lstm_seq_len-1)+2]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_pooling_list_time1[ts][self.choice[2][(self.lstm_seq_len*2)+ts]](nbhd_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*2)+ts] < len(self.nbhd_pooling_list_time1[ts]) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_relu_list_time1[ts][self.choice[4][(self.lstm_seq_len*2)+ts]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
         flow_convs = [self.flow_convs_list_time1[ts](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_pooling_list_time1[self.choice[2][(self.lstm_seq_len-1)+3]](flow_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+3] < len(self.flow_pooling_list_time1) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_relu_list_time1[self.choice[2][(self.lstm_seq_len-1)+3]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_gates = [Activation("sigmoid", name = "flow_gate1_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_pooling_list_time1[ts][self.choice[2][(self.lstm_seq_len*3)+ts]](flow_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*3)+ts] < len(self.flow_pooling_list_time1[ts]) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_relu_list_time1[ts][self.choice[4][(self.lstm_seq_len*3)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_gates = [self.flow_gate_time1[ts][self.choice[6][(self.lstm_seq_len*1)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
 
         #3rd level gate
         nbhd_convs = [self.nbhd_convs_list_time2[ts](nbhd_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_pooling_list_time2[self.choice[2][(self.lstm_seq_len-1)+4]](nbhd_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+4] < len(self.nbhd_pooling_list_time2) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
-        nbhd_convs = [self.nbhd_relu_list_time2[self.choice[4][(self.lstm_seq_len-1)+4]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_pooling_list_time2[ts][self.choice[2][(self.lstm_seq_len*4)+ts]](nbhd_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*4)+ts] < len(self.nbhd_pooling_list_time2[ts]) else nbhd_convs[ts] for ts in range(self.lstm_seq_len)]
+        nbhd_convs = [self.nbhd_relu_list_time2[ts][self.choice[4][(self.lstm_seq_len*4)+ts]](nbhd_convs[ts]) for ts in range(self.lstm_seq_len)]
         flow_convs = [self.flow_convs_list_time2[ts](flow_inputs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_pooling_list_time2[self.choice[2][(self.lstm_seq_len-1)+5]](flow_convs[ts]) \
-                        if self.choice[2][(self.lstm_seq_len-1)+5] < len(self.flow_pooling_list_time2) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
-        flow_convs = [self.flow_relu_list_time2[self.choice[4][(self.lstm_seq_len-1)+5]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
-        flow_gates = [Activation("sigmoid", name = "flow_gate2_{0}".format(ts+1))(flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_pooling_list_time2[ts][self.choice[2][(self.lstm_seq_len*5)+ts]](flow_convs[ts]) \
+                        if self.choice[2][(self.lstm_seq_len*5)+ts] < len(self.flow_pooling_list_time2[ts]) else flow_convs[ts] for ts in range(self.lstm_seq_len)]
+        flow_convs = [self.flow_relu_list_time2[ts][self.choice[4][(self.lstm_seq_len*5)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
+        flow_gates = [self.flow_gate_time2[ts][self.choice[6][(self.lstm_seq_len*2)+ts]](flow_convs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_convs = [keras.layers.Multiply()([nbhd_convs[ts], flow_gates[ts]]) for ts in range(self.lstm_seq_len)]
 
         #dense part
@@ -803,45 +917,47 @@ class STDN_Network(keras.Model):
         lstm = self.short_term_lstm(lstm_input)
 
         #attention part
-        index_num = (self.att_lstm_num - 1)
-        index_len = (self.att_lstm_seq_len - 1)
+        index_num = (self.att_lstm_num*6)
+        gate_index_num = (self.att_lstm_num*3)
+        index_len = (self.att_lstm_seq_len)
+        
         att_nbhd_convs = [[self.att_nbhd_convs_list_time0[att][ts](att_nbhd_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_pooling_list_time0[att][ts][self.choice[3][index_num*att + index_len*ts]](att_nbhd_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts] < len(self.att_nbhd_pooling_list_time0[att]) else att_nbhd_convs[att][ts] \
+        att_nbhd_convs = [[self.att_nbhd_pooling_list_time0[att][ts][self.choice[3][(index_num*att) + (index_len*0) + ts]](att_nbhd_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*0) + ts] < len(self.att_nbhd_pooling_list_time0[att][ts]) else att_nbhd_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_relu_list_time0[att][ts][self.choice[5][index_num*att+index_len*ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_nbhd_convs = [[self.att_nbhd_relu_list_time0[att][ts][self.choice[5][(index_num*att) + (index_len*0) + ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_convs = [[self.att_flow_convs_list_time0[att][ts](att_flow_inputs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_pooling_list_time0[att][ts][self.choice[3][index_num*att + index_len*ts + 1]](att_flow_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 1] < len(self.att_flow_pooling_list_time0[att]) else att_flow_convs[att][ts] \
+        att_flow_convs = [[self.att_flow_pooling_list_time0[att][ts][self.choice[3][(index_num*att) + (index_len*1) + ts]](att_flow_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*1) + ts] < len(self.att_flow_pooling_list_time0[att][ts]) else att_flow_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_relu_list_time0[att][ts][self.choice[5][index_num*att+index_len*ts+1]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_gates = [[Activation("sigmoid", name = "att_flow_gate0_{0}_{1}".format(att+1, ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_relu_list_time0[att][ts][self.choice[5][(index_num*att) + (index_len*1) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_gates = [[self.att_flow_gate_time0[att][ts][self.choice[7][(gate_index_num*att) + (index_len*0) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
         att_nbhd_convs = [[self.att_nbhd_convs_list_time1[att][ts](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_pooling_list_time1[att][ts][self.choice[3][index_num*att + index_len*ts + 2]](att_nbhd_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 2] < len(self.att_nbhd_pooling_list_time1[att]) else att_nbhd_convs[att][ts] \
+        att_nbhd_convs = [[self.att_nbhd_pooling_list_time1[att][ts][self.choice[3][(index_num*att) + (index_len*2) + ts]](att_nbhd_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*2) + ts] < len(self.att_nbhd_pooling_list_time1[att][ts]) else att_nbhd_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_relu_list_time1[att][ts][self.choice[5][index_num*att+index_len*ts+2]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_nbhd_convs = [[self.att_nbhd_relu_list_time1[att][ts][self.choice[5][(index_num*att) + (index_len*2) + ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_convs = [[self.att_flow_convs_list_time1[att][ts](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_pooling_list_time1[att][ts][self.choice[3][index_num*att + index_len*ts + 3]](att_flow_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 3] < len(self.att_flow_pooling_list_time1[att]) else att_flow_convs[att][ts] \
+        att_flow_convs = [[self.att_flow_pooling_list_time1[att][ts][self.choice[3][(index_num*att) + (index_len*3) + ts]](att_flow_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*3) + ts] < len(self.att_flow_pooling_list_time1[att][ts]) else att_flow_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_relu_list_time1[att][ts][self.choice[5][index_num*att+index_len*ts+3]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_gates = [[Activation("sigmoid", name = "att_flow_gate1_{0}_{1}".format(att+1, ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_relu_list_time1[att][ts][self.choice[5][(index_num*att) + (index_len*3) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_gates = [[self.att_flow_gate_time1[att][ts][self.choice[7][(gate_index_num*att) + (index_len*1) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
         att_nbhd_convs = [[self.att_nbhd_convs_list_time2[att][ts](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_pooling_list_time2[att][ts][self.choice[3][index_num*att + index_len*ts + 4]](att_nbhd_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 4] < len(self.att_nbhd_pooling_list_time2[att]) else att_nbhd_convs[att][ts] \
+        att_nbhd_convs = [[self.att_nbhd_pooling_list_time2[att][ts][self.choice[3][(index_num*att) + (index_len*4) + ts]](att_nbhd_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*4) + ts] < len(self.att_nbhd_pooling_list_time2[att][ts]) else att_nbhd_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_nbhd_convs = [[self.att_nbhd_relu_list_time2[att][ts][self.choice[5][index_num*att+index_len*ts+4]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_nbhd_convs = [[self.att_nbhd_relu_list_time2[att][ts][self.choice[5][(index_num*att) + (index_len*4) + ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_convs = [[self.att_flow_convs_list_time2[att][ts](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_pooling_list_time2[att][ts][self.choice[3][index_num*att + index_len*ts + 5]](att_flow_convs[att][ts]) \
-                            if self.choice[3][index_num*att + index_len*ts + 5] < len(self.att_flow_pooling_list_time2[att]) else att_flow_convs[att][ts] \
+        att_flow_convs = [[self.att_flow_pooling_list_time2[att][ts][self.choice[3][(index_num*att) + (index_len*5) + ts]](att_flow_convs[att][ts]) \
+                            if self.choice[3][(index_num*att) + (index_len*5) + ts] < len(self.att_flow_pooling_list_time2[att][ts]) else att_flow_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_relu_list_time2[att][ts][self.choice[5][index_num*att+index_len*ts+5]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_gates = [[Activation("sigmoid", name = "att_flow_gate2_{0}_{1}".format(att+1, ts+1))(att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_relu_list_time2[att][ts][self.choice[5][(index_num*att) + (index_len*5) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_gates = [[self.att_flow_gate_time2[att][ts][self.choice[7][(gate_index_num*att) + (index_len*2) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
         att_nbhd_vecs = [[Flatten(name = "att_nbhd_flatten_time_{0}_{1}".format(att+1,ts+1))(att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
