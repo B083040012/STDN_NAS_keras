@@ -54,9 +54,14 @@ GOTO :case-%ERRORLEVEL%
     GOTO :exit_prog
 
 :case-5
-    echo starting testing phase...
-    powershell "cmd /c python eval_architecture.py"
-    echo testing phase complete
+    @REM echo starting testing phase...
+    @REM powershell "cmd /c python eval_architecture.py"
+    @REM echo testing phase complete
+    echo eval final architecture
+    python eval_architecture.py > log/eval_final_architecture.txt
+    echo eval best architecture
+    python eval_best_architecture.py > log/eval_best_architecture.txt
+    echo all phase complete
     GOTO :exit_prog
 
 :case-6
