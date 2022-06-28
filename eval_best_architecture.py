@@ -61,19 +61,32 @@ def eval_architecture():
     logging.info("Finishing import the pretrained supernet")
     logging.info("architecture loading complete")
 
-    logging.info("evaluating start...")
+    logging.info("evaluating start (without denormalize)...")
     test_pred = model.predict( x=test_data )
-    test_pred = test_pred * config["dataset"]["volume_test_max"]
+    test_label = y
 
-    threshold = float(config["dataset"]["threshold"]) / config["dataset"]["volume_train_max"]
+    threshold = float(config["dataset"]["threshold"]) / config["dataset"]["volume_test_max"]
     print("Evaluating threshold: {0}.".format(threshold))
 
     total_loss_rmse, total_loss_mape = eval_together(test_label, test_pred, threshold)
     (prmse, pmape), (drmse, dmape) = eval_lstm(test_label, test_pred, threshold)
-    logging.info("best_architecture_testing complete")
-    logging.info("[Best Testing Result] pickup rmse = {0}, pickup mape = {1}%\ndropoff rmse = {2}, dropoff mape = {3}%".format(prmse, pmape * 100, drmse, dmape * 100))
-    logging.info("[Best Testing Result] total_rmse = {0}, total_mape = {1}".format(total_loss_rmse, total_loss_mape * 100))
-    logging.info("[Best Architecture Testing Phase End]")
+    logging.info("final_architecture_testing complete (without denormalize)")
+    logging.info("[Final Testing Result Without Denormalize] pickup rmse = {0}, pickup mape = {1}%\ndropoff rmse = {2}, dropoff mape = {3}%".format(prmse, pmape * 100, drmse, dmape * 100))
+    logging.info("[Final Testing Result Without Denormalize] total_rmse = {0}, total_mape = {1}".format(total_loss_rmse, total_loss_mape * 100))
+
+    logging.info("evaluating start (with denormalize)...")
+    test_pred = test_pred * config["dataset"]["volume_test_max"]
+    test_label = y * config["dataset"]["volume_test_max"]
+
+    threshold = float(config["dataset"]["threshold"])
+    print("Evaluating threshold: {0}.".format(threshold))
+
+    total_loss_rmse, total_loss_mape = eval_together(test_label, test_pred, threshold)
+    (prmse, pmape), (drmse, dmape) = eval_lstm(test_label, test_pred, threshold)
+    logging.info("final_architecture_testing complete (with denormalize)")
+    logging.info("[Final Testing Result With Denormalize] pickup rmse = {0}, pickup mape = {1}%\ndropoff rmse = {2}, dropoff mape = {3}%".format(prmse, pmape * 100, drmse, dmape * 100))
+    logging.info("[Final Testing Result With Denormalize] total_rmse = {0}, total_mape = {1}".format(total_loss_rmse, total_loss_mape * 100))
+    logging.info("[Final Architecture Testing Phase End]")
 
 if __name__=='__main__':
     eval_architecture()
