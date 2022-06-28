@@ -30,8 +30,8 @@ class STDN_fileloader:
 
     def load_test(self):
         # shape (timeslot_num, x_num, y_num, type=2)
-        self.volume_test = np.load(open(self.config["volume_test"], "rb"))["volume"] / self.config["volume_train_max"]
-        self.flow_test = np.load(open(self.config["flow_test"], "rb"))["flow"] / self.config["flow_train_max"]
+        self.volume_test = np.load(open(self.config["volume_test"], "rb"))["volume"] / self.config["volume_test_max"]
+        self.flow_test = np.load(open(self.config["flow_test"], "rb"))["flow"] / self.config["flow_test_max"]
         self.weather_test = np.load('data\\weather_test.npy')
 
     #this function nbhd for cnn, and features for lstm, based on attention model
