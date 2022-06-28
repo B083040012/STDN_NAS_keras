@@ -487,12 +487,12 @@ class STDN_NAS(keras.Model):
         att_flow_gates = [[self.att_flow_gate_time1[att][ts][self.choice[7][(gate_index_num*att) + (index_len*1) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[keras.layers.Multiply()([att_nbhd_convs[att][ts], att_flow_gates[att][ts]]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
-        att_nbhd_convs = [[self.att_nbhd_convs_list_time2[att][ts][self.choice[1][(index_num*att) + (index_len*4)+ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_nbhd_convs = [[self.att_nbhd_convs_list_time2[att][ts][self.choice[1][(index_num*att) + (index_len*4) + ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[self.att_nbhd_pooling_list_time2[att][ts][self.choice[3][(index_num*att) + (index_len*4) + ts]](att_nbhd_convs[att][ts]) \
                             if self.choice[3][(index_num*att) + (index_len*4) + ts] < len(self.att_nbhd_pooling_list_time2[att]) else att_nbhd_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_convs = [[self.att_nbhd_relu_list_time2[att][ts][self.choice[5][(index_num*att) + (index_len*4) + ts]](att_nbhd_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
-        att_flow_convs = [[self.att_flow_convs_list_time2[att][ts][self.choice[1][(index_num*att) + (index_len*5)+ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_flow_convs = [[self.att_flow_convs_list_time2[att][ts][self.choice[1][(index_num*att) + (index_len*5) + ts]](att_flow_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_flow_convs = [[self.att_flow_pooling_list_time2[att][ts][self.choice[3][(index_num*att) + (index_len*5) + ts]](att_flow_convs[att][ts]) \
                             if self.choice[3][(index_num*att) + (index_len*5) + ts] < len(self.att_flow_pooling_list_time2[att]) else att_flow_convs[att][ts] \
                             for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
