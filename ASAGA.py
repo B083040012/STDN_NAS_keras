@@ -19,7 +19,8 @@ class ASAGA_Searcher():
         self.crossover_rate=config["searching"]["crossover_rate"]
         self.num_choice=config["model"]["num_choice"]
         self.num_layers=config["model"]["num_layers"]
-        self.threshold = config["dataset"]["threshold"] / config["dataset"]["volume_train_max"]
+        # denomralized
+        self.threshold = config["dataset"]["threshold"]
         self.short_term_lstm_seq_num = config["dataset"]["short_term_lstm_seq_num"]
         self.att_lstm_num = config["dataset"]["att_lstm_num"]
         self.long_term_lstm_seq_num = config["dataset"]["long_term_lstm_seq_num"]
@@ -148,7 +149,7 @@ class ASAGA_Searcher():
             self.model.set_choice(architecture)
             y_pred = self.model.predict(val_loader)
             # denormalized
-            y_pred=y_pred*self.config["dataset"]["volume_train_max"]
+            y_pred=y_pred*self.config["dataset"]["volume_test_max"]
             loss_rmse = eval_rmse(self.val_label, y_pred, self.threshold)
             architecture_loss.append(loss_rmse)
         # architecture_loss=np.array(architecture_loss)
