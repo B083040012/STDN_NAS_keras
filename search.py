@@ -51,7 +51,7 @@ def search():
                                                                         nbhd_size=nbhd_size,
                                                                         cnn_nbhd_size=cnn_nbhd_size)
     val_loader=[att_cnnx, att_flow, att_x, cnnx, flow, [x,], weather, att_weather]
-    val_label = y*config["dataset"]["volume_train_max"]
+    val_label = y*config["dataset"]["volume_test_max"]
 
     # loading model
     # model=keras.models.load_model(checkpoint_file)
