@@ -1,6 +1,7 @@
 from models import STDN_NAS
 from ASAGA import ASAGA_Searcher
 from file_loader import STDN_fileloader
+from sagan_file_loader import SAGAN_fileloader
 import yaml, logging, time, os, keras
 import numpy as np
 import tensorflow as tf
@@ -16,11 +17,13 @@ def search():
     batch_size=config["training"]["batch_size"]
     max_epochs = config["training"]["max_epochs"]
     att_lstm_num = config["dataset"]["att_lstm_num"]
-    long_term_lstm_seq_num = config["dataset"]["long_term_lstm_seq_num"]
-    short_term_lstm_seq_num = config["dataset"]["short_term_lstm_seq_num"]
+    long_term_lstm_seq_len = config["dataset"]["long_term_lstm_seq_len"]
+    short_term_lstm_seq_len = config["dataset"]["short_term_lstm_seq_len"]
     cnn_nbhd_size = config["dataset"]["cnn_nbhd_size"]
     nbhd_size = config["dataset"]["nbhd_size"]
     cnn_flat_size = config["dataset"]["cnn_flat_size"]
+    hist_feature_daynum = config["dataset"]["hist_feature_daynum"]
+    last_feature_num = config["dataset"]["last_feature_num"]
 
     # load log file
     file_handlers=[
@@ -43,22 +46,21 @@ def search():
     checkpoint_file= config["file"]["path"] + 'best_supernet_cpt'
 
     # loading val dataset
-    dataloader= STDN_fileloader(config_path = "data_bike.json")
-    att_cnnx, att_flow, att_x, cnnx, flow, x, y, weather, att_weather =  dataloader.sample_stdn(datatype="validation",
-                                                                        att_lstm_num=att_lstm_num, \
-                                                                        long_term_lstm_seq_len=long_term_lstm_seq_num,
-                                                                        short_term_lstm_seq_len=short_term_lstm_seq_num, \
-                                                                        nbhd_size=nbhd_size,
-                                                                        cnn_nbhd_size=cnn_nbhd_size)
-    val_loader=[att_cnnx, att_flow, att_x, cnnx, flow, [x,], weather, att_weather]
+    dataloader = SAGAN_fileloader()
+    att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, short_lstm, short_weather, short_poi, y = dataloader.sample_sagan("validation",\
+                                                                                              att_lstm_num, long_term_lstm_seq_len,\
+                                                                                              short_term_lstm_seq_len, hist_feature_daynum,\
+                                                                                              last_feature_num)
+    val_loader = [att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, [short_lstm, ], short_weather, short_poi]
+    # denormalized
     val_label = y*config["dataset"]["volume_test_max"]
 
     # loading model
     # model=keras.models.load_model(checkpoint_file)
     tf.config.run_functions_eagerly(True)
-    model=STDN_NAS(att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_num, \
-                            lstm_seq_len=len(cnnx), feature_vec_len=x.shape[-1], \
-                            cnn_flat_size=cnn_flat_size, nbhd_size=cnnx[0].shape[1], nbhd_type=cnnx[0].shape[-1])
+    model=STDN_NAS(att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_len, \
+                            lstm_seq_len=len(short_cnn), feature_vec_len=short_lstm.shape[-1], \
+                            cnn_flat_size=cnn_flat_size, nbhd_size=short_cnn[0].shape[1], nbhd_type=short_cnn[0].shape[-1])
     # model.compile(optimizer = 'adagrad', loss = 'mse', metrics=[])
     # num_choice=3
     # num_layers=6

@@ -60,7 +60,7 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
     # loading data
     logging.info("loading training data...")
     dataloader = SAGAN_fileloader()
-    att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, short_lstm, weather, y = dataloader.sample_sagan("train",\
+    att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, short_lstm, short_weather, short_poi, y = dataloader.sample_sagan("test",\
                                                                                               att_lstm_num, long_term_lstm_seq_len,\
                                                                                               short_term_lstm_seq_len, hist_feature_daynum,\
                                                                                               last_feature_num)
@@ -70,13 +70,15 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
     # print("att_flow: ", len(att_flow), att_flow[0].shape)
     # print("att_lstm: ", len(att_lstm), att_lstm[0].shape)
     # print("att_weather: ", len(att_weather), att_weather[0].shape)
+    # # print("att poi: ", len(att_poi), att_poi[0].shape)
     # print("short_cnn: ", len(short_cnn), short_cnn[0].shape)
     # print("short_flow: ", len(short_flow), short_flow[0].shape)
     # print("short_lstm: ", short_lstm.shape)
-    # print("weather: ", weather.shape)
+    # print("short_weather: ", short_weather.shape)
+    # print("short poi: ", short_poi.shape)
     # print("y: ", y.shape)
 
-    train_data = [att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, [short_lstm, ], weather]
+    train_data = [att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, [short_lstm, ], short_weather, short_poi]
     train_label = y
     print("Start training supernet with input shape {1} / {0}".format(short_lstm.shape, short_cnn[0].shape))
     logging.info("train data loading complete")
