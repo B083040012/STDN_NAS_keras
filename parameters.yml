@@ -16,9 +16,9 @@ dataset:
   # num of day for attention (value P in paper)
   att_lstm_num: 3
   # num of time for attention (value Q in paper)
-  long_term_lstm_seq_num: 3
+  long_term_lstm_seq_len: 3
   # length of short tern value
-  short_term_lstm_seq_num: 7
+  short_term_lstm_seq_len: 7
   # neighbors for local cnn (2*cnn_nbhd_size+1) for area size
   cnn_nbhd_size: 3
   # for feature extraction
@@ -31,10 +31,12 @@ dataset:
   flow_train_max: 35.0
   flow_test_max: 35.0
   timeslot_sec: 1800
+  hist_feature_daynum: 7
+  last_feature_num: 48
   # training data time
   # date: (start)~(end-1), hour: (start)~(end-1)
   start_date_train: 5
-  end_date_train: 8
+  end_date_train: 5
   start_hour_train: 18
   end_hour_train: 35
   # testing data time
