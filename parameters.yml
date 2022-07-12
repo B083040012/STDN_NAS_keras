@@ -11,7 +11,7 @@ training:
   # size of batch
   batch_size: 64
   # maximum epochs
-  max_epochs: 120
+  max_epochs: 80
 dataset: 
   # num of day for attention (value P in paper)
   att_lstm_num: 3
@@ -26,25 +26,30 @@ dataset:
   # dimension of local conv output
   cnn_flat_size: 128
   threshold: 10
+  # not sure
   volume_train_max: 299.0
   volume_test_max: 307.0
-  flow_train_max: 35.0
-  flow_test_max: 35.0
+  flow_train_max: 61.0
+  flow_test_max: 59.0
   timeslot_sec: 1800
   hist_feature_daynum: 7
   last_feature_num: 48
   # training data time
   # date: (start)~(end-1), hour: (start)~(end-1)
-  start_date_train: 5
-  end_date_train: 5
-  start_hour_train: 18
-  end_hour_train: 35
+  # current date: 0 ~ 123
+  # current time: 0 ~ 48
+  start_date_train: 0
+  end_date_train: 123
+  start_hour_train: 0
+  end_hour_train: 48
   # testing data time
   # date: (start)~(end-1), hour: (start)~(end-1)
-  start_date_test: 9
-  end_date_test: 9
-  start_hour_test: 18
-  end_hour_test: 35
+  # current date: 0 ~ 30
+  # current time: 0 ~ 48
+  start_date_test: 0
+  end_date_test: 30
+  start_hour_test: 0
+  end_hour_test: 48
 searching:
   generation_num: 30
   population_num: 15
