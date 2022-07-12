@@ -12,8 +12,8 @@ class SAGAN_fileloader:
         """
         Load training data
         """
-        self.volume_train = np.load(self.config["file"]["volume_train"])
-        self.flow_train = np.load(self.config["file"]["flow_train"])
+        self.volume_train = np.load(self.config["file"]["volume_train"]) / self.config["dataset"]["volume_train_max"]
+        self.flow_train = np.load(self.config["file"]["flow_train"]) / self.config["dataset"]["flow_train_max"]
         self.weather_train = np.load(self.config["file"]["weather_train"])
         self.poi_data = np.load(self.config["file"]["poi_data"])
         self.start_date = self.config["dataset"]["start_date_train"]
@@ -25,8 +25,8 @@ class SAGAN_fileloader:
         """
         Load validation & testing data
         """
-        self.volume_test = np.load(self.config["file"]["volume_test"])
-        self.flow_test = np.load(self.config["file"]["flow_test"])
+        self.volume_test = np.load(self.config["file"]["volume_test"]) / self.config["dataset"]["volume_test_max"]
+        self.flow_test = np.load(self.config["file"]["flow_test"]) / self.config["dataset"]["flow_test_max"]
         self.weather_test = np.load(self.config["file"]["weather_test"])
         self.poi_data = np.load(self.config["file"]["poi_data"])
         self.start_date = self.config["dataset"]["start_date_test"]
@@ -74,16 +74,17 @@ class SAGAN_fileloader:
         lstm_att_features = []
         flow_att_features = []
         weather_att_features = []
-        poi_att_features = []
+        # poi_att_features = []
         for i in range(att_lstm_num):
             cnn_att_features.append([])
             lstm_att_features.append([])
             flow_att_features.append([])
             weather_att_features.append([])
-            poi_att_features.append([])
+            # poi_att_features.append([])
             for j in range(long_term_lstm_seq_len):
                 cnn_att_features[i].append([])
                 flow_att_features[i].append([])
+                # poi_att_features[i].append([])
 
         # initialize dataset time interval
         time_start = (hist_feature_daynum + att_lstm_num) * self.timeslot_daynum + long_term_lstm_seq_len
@@ -101,6 +102,13 @@ class SAGAN_fileloader:
                 print("Now sampling at {0}th timeslots.".format(index))
             for station_idx in range(0, volume_data.shape[1]):
                 """
+                poi features
+                    size: 10*10*10
+                    # since the poi features have identical timeslot for each station, short and long term all have same poi_features
+                """
+                poi_features.append(poi_data[station_idx])
+
+                """
                 short-term features
                 including:
                     1. cnn_features
@@ -108,6 +116,7 @@ class SAGAN_fileloader:
                     3. short_term_lstm_features
                     4. weather_features
                     5. poi_features
+                        # notice that poi features has no time interval yet (same time for each station)
                 """
                 short_term_lstm_samples = []
                 short_term_weather_samples = []
@@ -148,16 +157,24 @@ class SAGAN_fileloader:
 
                     flow_features[seqn].append(flow_feature)
 
+                    # """
+                    # short-term poi features
+                    #     size: 10*10*10
+                    #     including:
+                    #         10 types of poi
+                    # """
+                    # poi_features.append(poi_data[station_idx])
+
                     """
                     short-term lstm features
-                        size: ???
+                        size: 
                         including:
                             1. volume feature
                             2. last feature
                             3. hist feature
                     
                     short-term weather features
-                        size: 17
+                        size: 23
                         including:
                             1. temparature
                             2. dew point
@@ -166,10 +183,7 @@ class SAGAN_fileloader:
                             5. wind gust
                             6. pressure
                             7. precip
-                            8~17. one hot encoding for ten weather type
-
-                    short-term poi features
-                        # not done yet
+                            8~23. one hot encoding for ten weather type
                     """
                     # volume feature
                     nbhd_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
@@ -265,6 +279,14 @@ class SAGAN_fileloader:
                         flow_att_features[att_lstm_cnt][seqn].append(flow_feature)
 
                         """
+                        long-term poi features
+                            size: 10*10*10
+                            including:
+                                10 types of poi
+                        """
+                        # poi_att_features[att_lstm_cnt].append(poi_data[station_idx])
+
+                        """
                         long-term lstm features
                             size: ???
                             including:
@@ -273,7 +295,7 @@ class SAGAN_fileloader:
                                 3. hist feature
                         
                         long-term weather features
-                            size: 17
+                            size: 23
                             including:
                                 1. temparature
                                 2. dew point
@@ -282,10 +304,7 @@ class SAGAN_fileloader:
                                 5. wind gust
                                 6. pressure
                                 7. precip
-                                8~17. one hot encoding for ten weather type
-
-                        long-term poi features
-                            # not done yet
+                                8~23. one hot encoding for ten weather type
                         """
 
                         # volume feature
@@ -332,19 +351,23 @@ class SAGAN_fileloader:
             flow_features[i] = np.array(flow_features[i])
         short_term_lstm_features = np.array(short_term_lstm_features)
         weather_features = np.array(weather_features)
+        poi_features = np.array(poi_features)
         
         output_cnn_att_features = []
         output_flow_att_features = []
+        # output_poi_att_features = []
         for i in range(att_lstm_num):
             lstm_att_features[i] = np.array(lstm_att_features[i])
             weather_att_features[i] = np.array(weather_att_features[i])
             for j in range(long_term_lstm_seq_len):
                 cnn_att_features[i][j] = np.array(cnn_att_features[i][j])
                 flow_att_features[i][j] = np.array(flow_att_features[i][j])
+                # poi_att_features[i][j] = np.array(poi_att_features[i][j])
                 output_cnn_att_features.append(cnn_att_features[i][j])
                 output_flow_att_features.append(flow_att_features[i][j])
+                # output_poi_att_features.append(poi_att_features[i][j])
         labels = np.array(labels)
 
         return output_cnn_att_features, output_flow_att_features, lstm_att_features, weather_att_features,\
-            cnn_features, flow_features, short_term_lstm_features, weather_features,\
+            cnn_features, flow_features, short_term_lstm_features, weather_features, poi_features,\
             labels
