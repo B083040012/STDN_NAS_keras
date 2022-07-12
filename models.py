@@ -158,6 +158,17 @@ class STDN_NAS(keras.Model):
             self.flow_gate_time2[ts].append(ReLU(max_value = 6.0, name = "flow_gate_relu6_2_{0}".format(ts+1)))
             self.flow_gate_time2[ts].append(Activation("tanh", name = "flow_gate_tanh_2_{0}".format(ts+1)))
 
+        # poi convs list
+        self.poi_convs_list = []
+        for ts in range(self.lstm_seq_len):
+            self.poi_convs_list.append([])
+            self.poi_convs_list[ts].append(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'same', name = "short_term_poi_convs_{0}".format(ts+1)))
+
+        # poi dense list
+        self.poi_dense_list = []
+        for ts in range(self.lstm_seq_len):
+            self.poi_dense_list.append(Dense(units = self.cnn_flat_size, name = "short_term_poi_dense_{0}".format(ts+1)))
+
 
         # dense layer in the short-term part
         self.short_term_dense_list=[]
@@ -316,6 +327,21 @@ class STDN_NAS(keras.Model):
                 self.att_flow_relu_list_time2[att][ts].append(ReLU(max_value = 6.0, name = "att_flow_relu6_time2_{0}_{1}".format(att+1, ts+1)))
                 self.att_flow_relu_list_time2[att][ts].append(PReLU(name = "att_flow_prelu_time2_{0}_{1}".format(att+1, ts+1)))
                     
+        # attention part poi convs list
+        self.att_poi_convs_list = []
+        for att in range(self.att_lstm_num):
+            self.att_poi_convs_list.append([])
+            for ts in range(self.att_lstm_seq_len):
+                self.att_poi_convs_list[att].append([])
+                self.att_poi_convs_list[att][ts].append(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'same', \
+                    name = "long_term_poi_convs_{0}".format(ts+1)))
+
+        # attention part poi dense list
+        self.att_poi_dense_list = []
+        for att in range(self.att_lstm_num):
+            self.att_poi_dense_list.append([])
+            for ts in range(self.att_lstm_seq_len):
+                self.att_poi_dense_list[att].append(Dense(units = self.cnn_flat_size, name = "att_poi_dense_{0}_{1}".format(att+1, ts+1)))
 
         # attention part dense list
         self.att_dense_list=[]
@@ -386,13 +412,15 @@ class STDN_NAS(keras.Model):
 
     def call(self, input):
         
-        flatten_att_nbhd_inputs, flatten_att_flow_inputs, att_lstm_inputs, att_weather, nbhd_inputs, flow_inputs, [lstm_inputs, ], weather = input
+        flatten_att_nbhd_inputs, flatten_att_flow_inputs, att_lstm_inputs, att_weather, nbhd_inputs, flow_inputs, [lstm_inputs, ], weather, poi_data = input
 
         att_nbhd_inputs = []
         att_flow_inputs = []
+        # att_poi_inputs = []
         for att in range(self.att_lstm_num):
             att_nbhd_inputs.append(flatten_att_nbhd_inputs[att*self.att_lstm_seq_len:(att+1)*self.att_lstm_seq_len])
             att_flow_inputs.append(flatten_att_flow_inputs[att*self.att_lstm_seq_len:(att+1)*self.att_lstm_seq_len])
+            # att_poi_inputs.append(att_poi_data[att*self.att_lstm_seq_len:(att+1)*self.att_lstm_seq_len])
 
         # print("choice:", self.choice)
 
@@ -446,12 +474,22 @@ class STDN_NAS(keras.Model):
         nbhd_vecs = [self.short_term_dense_list[ts](nbhd_vecs[ts]) for ts in range(self.lstm_seq_len)]
         nbhd_vecs = [Activation("relu", name = "nbhd_dense_activation_time_{0}".format(ts+1))(nbhd_vecs[ts]) for ts in range(self.lstm_seq_len)]
 
+        # poi part
+        # cnn--> flatten--> activation
+        poi_convs = [self.poi_convs_list[ts][0](poi_data) for ts in range(self.lstm_seq_len)]
+        poi_convs = [Activation("relu", name = "poi_convs_activation_{0}".format(ts+1))(poi_convs[ts]) for ts in range(self.lstm_seq_len)]
+        poi_vecs = [Flatten(name = "poi_flatten_{0}".format(ts+1))(poi_convs[ts]) for ts in range(self.lstm_seq_len)]
+        poi_vecs = [self.poi_dense_list[ts](poi_vecs[ts]) for ts in range(self.lstm_seq_len)]
+        poi_vecs = [Activation("relu", name = "poi_dense_activation_{0}".format(ts+1))(poi_vecs[ts]) for ts in range(self.lstm_seq_len)]
+        poi_vec = Concatenate(axis = -1)(poi_vecs)
+        poi_vec = Reshape(target_shape = (self.lstm_seq_len, self.cnn_flat_size))(poi_vec)
+
         # should weather run FC???
 
         #feature concatenate
         nbhd_vec = Concatenate(axis=-1)(nbhd_vecs)
         nbhd_vec = Reshape(target_shape = (self.lstm_seq_len, self.cnn_flat_size))(nbhd_vec)
-        lstm_input = Concatenate(axis=-1)([lstm_inputs, nbhd_vec, weather])
+        lstm_input = Concatenate(axis=-1)([lstm_inputs, nbhd_vec, weather, poi_vec])
 
         #lstm
         lstm = self.short_term_lstm(lstm_input)
@@ -504,10 +542,16 @@ class STDN_NAS(keras.Model):
         att_nbhd_vecs = [[self.att_dense_list[att][ts](att_nbhd_vecs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
         att_nbhd_vecs = [[Activation("relu", name = "att_nbhd_dense_activation_time_{0}_{1}".format(att+1,ts+1))(att_nbhd_vecs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
 
+        att_poi_convs = [[self.att_poi_convs_list[att][ts][0](poi_data) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_poi_vecs = [[Flatten(name = "att_poi_flatten_{0}_{1}".format(att+1, ts+1))(att_poi_convs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_poi_vecs = [[self.att_poi_dense_list[att][ts](att_poi_vecs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_poi_vecs = [[Activation("relu", name = "att_poi_dense_activation_time_{0}_{1}".format(att+1, ts+1))(att_poi_vecs[att][ts]) for ts in range(self.att_lstm_seq_len)] for att in range(self.att_lstm_num)]
+        att_poi_vec = [Concatenate(axis = -1)(att_poi_vecs[att]) for att in range(self.att_lstm_num)]
+        att_poi_vec = [Reshape(target_shape = (self.att_lstm_seq_len, self.cnn_flat_size))(att_poi_vec[att]) for att in range(self.att_lstm_num)]
 
         att_nbhd_vec = [Concatenate(axis=-1)(att_nbhd_vecs[att]) for att in range(self.att_lstm_num)]
         att_nbhd_vec = [Reshape(target_shape = (self.att_lstm_seq_len, self.cnn_flat_size))(att_nbhd_vec[att]) for att in range(self.att_lstm_num)]
-        att_lstm_input = [Concatenate(axis=-1)([att_lstm_inputs[att], att_nbhd_vec[att], att_weather[att]]) for att in range(self.att_lstm_num)]
+        att_lstm_input = [Concatenate(axis=-1)([att_lstm_inputs[att], att_nbhd_vec[att], att_weather[att], att_poi_vec[att]]) for att in range(self.att_lstm_num)]
 
         att_lstms = [self.att_lstm_list[att](att_lstm_input[att]) for att in range(self.att_lstm_num)]
 
