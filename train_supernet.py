@@ -4,6 +4,7 @@ import tensorflow as tf
 from tensorflow.python.keras import backend as K
 from models import STDN_NAS
 from file_loader import STDN_fileloader
+from sagan_file_loader import SAGAN_fileloader
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
 
@@ -58,11 +59,22 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
 
     # loading data
     logging.info("loading training data...")
-    dataloader = STDN_fileloader(config_path = "data_bike.json")
-    att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, short_lstm, weather, y = dataloader.sample_stdn("train", \
-                                                                                              att_lstm_num, long_term_lstm_seq_len, \
-                                                                                              short_term_lstm_seq_len, hist_feature_daynum, \
+    dataloader = SAGAN_fileloader()
+    att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, short_lstm, weather, y = dataloader.sample_sagan("train",\
+                                                                                              att_lstm_num, long_term_lstm_seq_len,\
+                                                                                              short_term_lstm_seq_len, hist_feature_daynum,\
                                                                                               last_feature_num)
+
+    # print("size of training data: ")
+    # print("att_cnn: ", len(att_cnn), att_cnn[0].shape)
+    # print("att_flow: ", len(att_flow), att_flow[0].shape)
+    # print("att_lstm: ", len(att_lstm), att_lstm[0].shape)
+    # print("att_weather: ", len(att_weather), att_weather[0].shape)
+    # print("short_cnn: ", len(short_cnn), short_cnn[0].shape)
+    # print("short_flow: ", len(short_flow), short_flow[0].shape)
+    # print("short_lstm: ", short_lstm.shape)
+    # print("weather: ", weather.shape)
+    # print("y: ", y.shape)
 
     train_data = [att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, [short_lstm, ], weather]
     train_label = y
