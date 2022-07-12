@@ -322,9 +322,10 @@ class SAGAN_fileloader:
                     including:
                         1. outflow
                         2. inflow
+                # the target station's inflow and outflow is in (5, 4) grid
                 # not done yet
                 """
-                labels.append(flow_data[t, station_idx, ])
+                labels.append(flow_data[t, station_idx, :, 5, 4])
 
         for i in range(short_term_lstm_seq_len):
             cnn_features[i] = np.array(cnn_features[i])
