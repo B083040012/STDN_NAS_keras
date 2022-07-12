@@ -386,7 +386,7 @@ class STDN_NAS(keras.Model):
 
     def call(self, input):
         
-        flatten_att_nbhd_inputs, flatten_att_flow_inputs, att_lstm_inputs, nbhd_inputs, flow_inputs, [lstm_inputs,], weather, att_weather = input
+        flatten_att_nbhd_inputs, flatten_att_flow_inputs, att_lstm_inputs, att_weather, nbhd_inputs, flow_inputs, [lstm_inputs, ], weather = input
 
         att_nbhd_inputs = []
         att_flow_inputs = []
