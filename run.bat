@@ -1,7 +1,7 @@
 @echo off 
 SETLOCAL EnableDelayedExpansion
 echo *********************************************
-echo ***************STDN_NAS_keras****************
+echo ****************SAGAN_keras******************
 echo Phase Select:
 echo 1. Run All ( train, search, retrain, test )
 echo 2. Train
