@@ -2,7 +2,7 @@ import numpy as np
 import yaml, random
 
 class SAGAN_fileloader:
-    def __init__(self, config_path = "parameter.yml"):
+    def __init__(self, config_path = "./parameters.yml"):
         with open(config_path, "r") as stream:
             self.config = yaml.load(stream, Loader = yaml.FullLoader)
         self.timeslot_daynum = int(86400 / self.config["dataset"]["timeslot_sec"])
@@ -139,7 +139,7 @@ class SAGAN_fileloader:
                     flow_feature_last_out_to_curr = flow_data[real_t - 1, station_idx, 0, :, :]
                     flow_feature_curr_in_from_last = flow_data[real_t - 1, station_idx, 1, :, :]
 
-                    flow_feature = np.zero(flow_feature_curr_in.shape+(4,))
+                    flow_feature = np.zeros(flow_feature_curr_in.shape+(4,))
 
                     flow_feature[:, :, 0] = flow_feature_curr_out
                     flow_feature[:, :, 1] = flow_feature_curr_in
@@ -172,22 +172,22 @@ class SAGAN_fileloader:
                         # not done yet
                     """
                     # volume feature
-                    nbhd_feature = np.zero((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                    nbhd_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
                     nbhd_feature[:, :, 0] = volume_data[real_t, station_idx, 0, :, :]
                     nbhd_feature[:, :, 1] = volume_data[real_t, station_idx, 1, :, :]
                     nbhd_feature = nbhd_feature.flatten()
                     
                     # last feature
-                    last_feature = np.zero((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                    last_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
                     last_feature[:, :, 0] = volume_data[real_t - last_feature_num, station_idx, 0, :, :]
                     last_feature[:, :, 1] = volume_data[real_t - last_feature_num, station_idx, 1, :, :]
                     last_feature = last_feature.flatten()
 
                     # hist feature
-                    hist_feature = np.zero((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
-                    hist_feature[:, :, 0] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
+                    hist_feature = np.zeros((7, volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                    hist_feature[:, :, :, 0] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
                         station_idx, 0, :, :]
-                    hist_feature[:, :, 1] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
+                    hist_feature[:, :, :, 1] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
                         station_idx, 1, :, :]
                     hist_feature = hist_feature.flatten()
 
@@ -197,7 +197,7 @@ class SAGAN_fileloader:
                     short_term_lstm_samples.append(feature_vec)
                     short_term_weather_samples.append(weather_data[real_t])
 
-                short_term_lstm_features.append(np.array(short_term_lstm_features))
+                short_term_lstm_features.append(np.array(short_term_lstm_samples))
                 weather_features.append(np.array(short_term_weather_samples))
 
                 """
@@ -221,10 +221,10 @@ class SAGAN_fileloader:
                             --> t - (att_lstm_num - att_lstm_cnt) * self.timeslot_daynum
                         2. for each day, sample the time from 
                             (long_term_lstm_seq_len / 2) before target time ~ (long_term_lstm_seq_len / 2) after target time
-                    for example, if (att_lstm_num, long_term_lstm_seq_len) = (3, 3), target time = (day 4, time 9), then att_t sample from
-                            day 1: time 8 ~ 10
-                            day 2: time 8 ~ 10
-                            day 3: time 8 ~ 10
+                    for example, if (att_lstm_num, long_term_lstm_seq_len) = (3, 3), target time = (day 4, timeslot 9), then att_t sample from
+                            day 1: timeslot 8 ~ 10
+                            day 2: timeslot 8 ~ 10
+                            day 3: timeslot 8 ~ 10
                     """
                     att_t = int(t - (att_lstm_num - att_lstm_cnt) * self.timeslot_daynum + (long_term_lstm_seq_len - 1) / 2 + 1)
 
@@ -255,14 +255,14 @@ class SAGAN_fileloader:
                         flow_feature_last_out_to_curr = flow_data[real_t, station_idx, 0, :, :]
                         flow_feature_curr_in_from_last = flow_data[real_t, station_idx, 1, :, :]
 
-                        flow_feature = np.zero(flow_feature_curr_in.shape+(4,))
+                        flow_feature = np.zeros(flow_feature_curr_in.shape+(4,))
 
                         flow_feature[:, :, 0] = flow_feature_curr_out
                         flow_feature[:, :, 1] = flow_feature_curr_in
                         flow_feature[:, :, 2] = flow_feature_last_out_to_curr
                         flow_feature[:, :, 3] = flow_feature_curr_in_from_last
 
-                        flow_att_features[att_lstm_cnt][seqn] = flow_feature
+                        flow_att_features[att_lstm_cnt][seqn].append(flow_feature)
 
                         """
                         long-term lstm features
@@ -289,22 +289,22 @@ class SAGAN_fileloader:
                         """
 
                         # volume feature
-                        nbhd_feature = np.zero((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                        nbhd_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
                         nbhd_feature[:, :, 0] = volume_data[real_t, station_idx, 0, :, :]
                         nbhd_feature[:, :, 1] = volume_data[real_t, station_idx, 1, :, :]
                         nbhd_feature = nbhd_feature.flatten()
 
                         # last feature
-                        last_feature = np.zero((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                        last_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
                         last_feature[:, :, 0] = volume_data[real_t - last_feature_num, station_idx, 0, :, :]
                         last_feature[:, :, 1] = volume_data[real_t - last_feature_num, station_idx, 1, :, :]
                         last_feature = last_feature.flatten()
 
                         # hist feature
-                        hist_feature = np.zero((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
-                        hist_feature[:, :, 0] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
+                        hist_feature = np.zeros((7, volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                        hist_feature[:, :, :, 0] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
                             station_idx, 0, :, :]
-                        hist_feature[:, :, 1] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
+                        hist_feature[:, :, :, 1] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
                             station_idx, 1, :, :]
                         hist_feature = hist_feature.flatten()
 
@@ -336,8 +336,8 @@ class SAGAN_fileloader:
         output_cnn_att_features = []
         output_flow_att_features = []
         for i in range(att_lstm_num):
-            lstm_att_features = np.array(lstm_att_features[i])
-            flow_att_features = np.array(flow_att_features[i])
+            lstm_att_features[i] = np.array(lstm_att_features[i])
+            weather_att_features[i] = np.array(weather_att_features[i])
             for j in range(long_term_lstm_seq_len):
                 cnn_att_features[i][j] = np.array(cnn_att_features[i][j])
                 flow_att_features[i][j] = np.array(flow_att_features[i][j])
