@@ -97,7 +97,7 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
     #                         save_best_only=True, mode='auto')
 
     logging.info("loading supernet...")
-    tf.config.run_functions_eagerly(True)
+    # tf.config.run_functions_eagerly(True)
     # tf.config.run_functions_eagerly(False)
     # model=STDN_NAS(att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_len, \
     #                         lstm_seq_len=len(short_cnn), feature_vec_len=short_lstm.shape[-1], \

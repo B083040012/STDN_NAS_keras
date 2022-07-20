@@ -282,7 +282,7 @@ class SAGAN_Suprtnet_Subclass_model(keras.Model):
         # Return a dict mapping metric names to current value
         return {m.name: m.result() for m in self.metrics}
 
-    @tf.function
+    # @tf.function
     def call(self, inputs):
         flatten_att_nbhd_inputs, flatten_att_flow_inputs, att_lstm_inputs, att_weather, nbhd_inputs, flow_inputs, [lstm_inputs, ], weather, poi_data = inputs
 
