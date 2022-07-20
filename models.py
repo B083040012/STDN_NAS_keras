@@ -12,10 +12,6 @@ from keras.optimizers import Adam, RMSprop
 from keras.callbacks import EarlyStopping, Callback, ModelCheckpoint
 import attention
 
-class baselines:
-    def __init__(self):
-        pass
-
 class STDN_NAS(keras.Model):
     def __init__(self, att_lstm_num, att_lstm_seq_len, lstm_seq_len, feature_vec_len, cnn_flat_size = 128, lstm_out_size = 128,\
     nbhd_size = 3, nbhd_type = 2, map_x_num = 10, map_y_num = 20, flow_type = 4, output_shape = 2):
@@ -33,6 +29,7 @@ class STDN_NAS(keras.Model):
         self.map_y_num = map_y_num
         self.flow_type = flow_type
         self.output_size = output_shape
+        self.choice = []
 
         self.level=3
         self.kernel_list=[1,2,3]
