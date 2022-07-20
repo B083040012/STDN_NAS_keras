@@ -21,9 +21,9 @@ class ASAGA_Searcher():
         self.num_layers=config["model"]["num_layers"]
         # denomralized
         self.threshold = config["dataset"]["threshold"]
-        self.short_term_lstm_seq_num = config["dataset"]["short_term_lstm_seq_num"]
+        self.short_term_lstm_seq_num = config["dataset"]["short_term_lstm_seq_len"]
         self.att_lstm_num = config["dataset"]["att_lstm_num"]
-        self.long_term_lstm_seq_num = config["dataset"]["long_term_lstm_seq_num"]
+        self.long_term_lstm_seq_num = config["dataset"]["long_term_lstm_seq_len"]
     def search(self):
         """
         Initialization
@@ -33,19 +33,47 @@ class ASAGA_Searcher():
         parent_population=[]
         for p in range(self.population_num):
 
-            # conv size choice
-            short_conv_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
-            att_conv_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
-            # pooling choice: [2,3,4] pool_size for max/avg pooling and no pooling: 3*2+1 choices
-            short_pooling_choice = list(np.random.randint(self.num_choice*2+1, size=self.num_layers*self.short_term_lstm_seq_num))
-            att_pooling_choice = list(np.random.randint(self.num_choice*2+1, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
-            # relu choice: relu, relu6, prelu
-            short_relu_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
-            att_relu_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
-            # flow gate choice: sigmoid, relu6, tanh: 3 choices
-            flow_gate_choice = list(np.random.randint(self.num_choice, size=3*self.short_term_lstm_seq_num))
-            att_flow_gate_choice = list(np.random.randint(self.num_choice, size=3*self.att_lstm_num*self.long_term_lstm_seq_num))
-            architecture=[short_conv_choice, att_conv_choice, short_pooling_choice, att_pooling_choice, short_relu_choice, att_relu_choice, flow_gate_choice, att_flow_gate_choice]
+            """
+            Initialize the nas choice:
+            including:
+                1. short_conv_choice: level * short_lstm_seq_len * 2 (nbhd / flow)
+                2. short_pooling_choice: level * short_lstm_seq_len * 2 (nbhd / flow)
+                3. short_conv_activ_choice: level * short_lstm_seq_len * 2 (nbhd / flow)
+                4. short_gate_activ_choice: level * short_lstm_seq_len * 1
+                5. long_conv_choice: level * long_lstm_num * long_lstm_seq_len * 2 (nbhd / flow)
+                6. long_pooling_choice: level * long_lstm_num * long_lstm_seq_len * 2 (nbhd / flow)
+                7. long_conv_activ_choice: level * long_lstm_num * long_lstm_seq_len * 2 (nbhd / flow)
+                8. long_gate_activ_choice: level * long_lstm_num * long_lstm_seq_len * 1
+            """
+            conv_choice, pooling_choice, conv_activ_choice, gate_activ_choice = 3, 7, 3, 3
+            gate_level = 3
+            # short term choice
+            short_conv_choice = list(np.random.randint(conv_choice, size = (gate_level, self.short_term_lstm_seq_num, 2)))
+            short_pooling_choice = list(np.random.randint(pooling_choice, size = (gate_level, self.short_term_lstm_seq_num, 2)))
+            short_conv_activ_choice = list(np.random.randint(conv_activ_choice, size = (gate_level, self.short_term_lstm_seq_num, 2)))
+            short_gate_activ_choice = list(np.random.randint(gate_activ_choice, size = (gate_level, self.short_term_lstm_seq_num)))
+
+            # long term choice
+            long_conv_choice = list(np.random.randint(conv_choice, size = (gate_level, self.att_lstm_num, self.long_term_lstm_seq_num, 2)))
+            long_pooling_choice = list(np.random.randint(pooling_choice, size = (gate_level, self.att_lstm_num, self.long_term_lstm_seq_num, 2)))
+            long_conv_activ_choice = list(np.random.randint(conv_activ_choice, size = (gate_level, self.att_lstm_num, self.long_term_lstm_seq_num, 2)))
+            long_gate_activ_choice = list(np.random.randint(gate_activ_choice, size = (gate_level, self.att_lstm_num, self.long_term_lstm_seq_num)))
+            architecture = [short_conv_choice, short_pooling_choice, short_conv_activ_choice, short_gate_activ_choice, \
+                long_conv_choice, long_pooling_choice, long_conv_activ_choice, long_gate_activ_choice]
+
+            # # conv size choice
+            # short_conv_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
+            # att_conv_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
+            # # pooling choice: [2,3,4] pool_size for max/avg pooling and no pooling: 3*2+1 choices
+            # short_pooling_choice = list(np.random.randint(self.num_choice*2+1, size=self.num_layers*self.short_term_lstm_seq_num))
+            # att_pooling_choice = list(np.random.randint(self.num_choice*2+1, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
+            # # relu choice: relu, relu6, prelu
+            # short_relu_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.short_term_lstm_seq_num))
+            # att_relu_choice = list(np.random.randint(self.num_choice, size=self.num_layers*self.att_lstm_num*self.long_term_lstm_seq_num))
+            # # flow gate choice: sigmoid, relu6, tanh: 3 choices
+            # flow_gate_choice = list(np.random.randint(self.num_choice, size=3*self.short_term_lstm_seq_num))
+            # att_flow_gate_choice = list(np.random.randint(self.num_choice, size=3*self.att_lstm_num*self.long_term_lstm_seq_num))
+            # architecture=[short_conv_choice, att_conv_choice, short_pooling_choice, att_pooling_choice, short_relu_choice, att_relu_choice, flow_gate_choice, att_flow_gate_choice]
 
             # no avaliable condition currently
             parent_population.append(architecture)

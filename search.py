@@ -2,6 +2,7 @@ from models import STDN_NAS
 from ASAGA import ASAGA_Searcher
 from file_loader import STDN_fileloader
 from sagan_file_loader import SAGAN_fileloader
+from choice_block_model import SAGAN_Suprtnet_Subclass_model
 import yaml, logging, time, os, keras
 import numpy as np
 import tensorflow as tf
@@ -57,10 +58,13 @@ def search():
 
     # loading model
     # model=keras.models.load_model(checkpoint_file)
-    tf.config.run_functions_eagerly(True)
-    model=STDN_NAS(att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_len, \
-                            lstm_seq_len=len(short_cnn), feature_vec_len=short_lstm.shape[-1], \
-                            cnn_flat_size=cnn_flat_size, nbhd_size=short_cnn[0].shape[1], nbhd_type=short_cnn[0].shape[-1])
+    # tf.config.run_functions_eagerly(True)
+    # model=STDN_NAS(att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_len, \
+    #                         lstm_seq_len=len(short_cnn), feature_vec_len=short_lstm.shape[-1], \
+    #                         cnn_flat_size=cnn_flat_size, nbhd_size=short_cnn[0].shape[1], nbhd_type=short_cnn[0].shape[-1])
+    model = SAGAN_Suprtnet_Subclass_model(att_lstm_num = att_lstm_num, att_lstm_seq_len = long_term_lstm_seq_len, \
+        lstm_seq_len = short_term_lstm_seq_len, feature_vec_len = short_lstm.shape[-1], cnn_flat_size = cnn_flat_size, \
+        lstm_out_size = 128, output_shape = 2)
     # model.compile(optimizer = 'adagrad', loss = 'mse', metrics=[])
     # num_choice=3
     # num_layers=6

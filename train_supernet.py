@@ -5,6 +5,10 @@ from tensorflow.python.keras import backend as K
 from models import STDN_NAS
 from file_loader import STDN_fileloader
 from sagan_file_loader import SAGAN_fileloader
+from choice_block_model import SAGAN_Suprtnet_Subclass_model
+from numba import cuda
+cuda.select_device(0)
+cuda.close()
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
 
@@ -60,7 +64,7 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
     # loading data
     logging.info("loading training data...")
     dataloader = SAGAN_fileloader()
-    att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, short_lstm, short_weather, short_poi, y = dataloader.sample_sagan("test",\
+    att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, short_lstm, short_weather, short_poi, y = dataloader.sample_sagan("train",\
                                                                                               att_lstm_num, long_term_lstm_seq_len,\
                                                                                               short_term_lstm_seq_len, hist_feature_daynum,\
                                                                                               last_feature_num)
@@ -88,11 +92,25 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
                             save_best_only=True, save_weights_only=True, \
                             mode='auto')
 
+    # filepath=config["file"]["path"] + 'best_supernet_cpt.h5py'
+    # checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, \
+    #                         save_best_only=True, mode='auto')
+
     logging.info("loading supernet...")
     tf.config.run_functions_eagerly(True)
-    model=STDN_NAS(att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_len, \
-                            lstm_seq_len=len(short_cnn), feature_vec_len=short_lstm.shape[-1], \
-                            cnn_flat_size=cnn_flat_size, nbhd_size=short_cnn[0].shape[1], nbhd_type=short_cnn[0].shape[-1])
+    # tf.config.run_functions_eagerly(False)
+    # model=STDN_NAS(att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_len, \
+    #                         lstm_seq_len=len(short_cnn), feature_vec_len=short_lstm.shape[-1], \
+    #                         cnn_flat_size=cnn_flat_size, nbhd_size=short_cnn[0].shape[1], nbhd_type=short_cnn[0].shape[-1])
+
+
+    model = SAGAN_Suprtnet_Subclass_model(att_lstm_num = att_lstm_num, att_lstm_seq_len = long_term_lstm_seq_len, \
+        lstm_seq_len = short_term_lstm_seq_len, feature_vec_len = short_lstm.shape[-1], cnn_flat_size = cnn_flat_size, \
+        lstm_out_size = 128, output_shape = 2)
+    # model = modeler.func_model(att_lstm_num, long_term_lstm_seq_len, short_term_lstm_seq_len, short_lstm.shape[-1], \
+    #                            cnn_flat_size, 128, short_cnn[0].shape[1], short_poi.shape[1], short_cnn[0].shape[-1], \
+    #                            short_flow[0].shape[-1], short_weather.shape[-1], short_poi.shape[-1], 2)
+
     logging.info("supernet loading complete")
 
     model.compile(optimizer = 'adagrad', loss = 'mse', metrics=[])
