@@ -11,7 +11,7 @@ training:
   # size of batch
   batch_size: 64
   # maximum epochs
-  max_epochs: 80
+  max_epochs: 2
 dataset: 
   # num of day for attention (value P in paper)
   att_lstm_num: 3
@@ -36,22 +36,22 @@ dataset:
   last_feature_num: 48
   # training data time
   # date: (start)~(end-1), hour: (start)~(end-1)
-  # current date: 0 ~ 123
+  # current date: 0 ~ 40
   # current time: 0 ~ 48
-  start_date_train: 0
-  end_date_train: 123
-  start_hour_train: 0
-  end_hour_train: 48
+  start_date_train: 39
+  end_date_train: 40
+  start_hour_train: 18
+  end_hour_train: 36
   # testing data time
   # date: (start)~(end-1), hour: (start)~(end-1)
-  # current date: 0 ~ 30
+  # current date: 0 ~ 20
   # current time: 0 ~ 48
-  start_date_test: 0
-  end_date_test: 30
+  start_date_test: 19
+  end_date_test: 20
   start_hour_test: 0
   end_hour_test: 48
 searching:
-  generation_num: 30
+  generation_num: 1
   population_num: 15
   annealing_ratio: 0.9
   initial_tmp: 200
