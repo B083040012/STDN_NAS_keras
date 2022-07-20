@@ -14,6 +14,7 @@ class SAGAN_fileloader:
         """
         self.volume_train = np.load(self.config["file"]["volume_train"]) / self.config["dataset"]["volume_train_max"]
         self.flow_train = np.load(self.config["file"]["flow_train"]) / self.config["dataset"]["flow_train_max"]
+        self.label_train = np.load(self.config["file"]["label_train"]) / self.config["dataset"]["label_train_max"]
         self.weather_train = np.load(self.config["file"]["weather_train"])
         self.poi_data = np.load(self.config["file"]["poi_data"])
         self.start_date = self.config["dataset"]["start_date_train"]
@@ -27,6 +28,7 @@ class SAGAN_fileloader:
         """
         self.volume_test = np.load(self.config["file"]["volume_test"]) / self.config["dataset"]["volume_test_max"]
         self.flow_test = np.load(self.config["file"]["flow_test"]) / self.config["dataset"]["flow_test_max"]
+        self.label_test = np.load(self.config["file"]["label_test"]) / self.config["dataset"]["label_test_max"]
         self.weather_test = np.load(self.config["file"]["weather_test"])
         self.poi_data = np.load(self.config["file"]["poi_data"])
         self.start_date = self.config["dataset"]["start_date_test"]
@@ -48,12 +50,14 @@ class SAGAN_fileloader:
             flow_data = self.flow_train
             weather_data = self.weather_train
             poi_data = self.poi_data
+            label_data = self.label_train
         elif datatype == "validation" or "test":
             self.load_test()
             volume_data = self.volume_test
             flow_data = self.flow_test
             weather_data = self.weather_test
             poi_data = self.poi_data
+            label_data = self.label_test
         else:
             print("Please select 'train', 'validation', or 'test'")
             raise Exception
@@ -338,12 +342,10 @@ class SAGAN_fileloader:
                 label
                     size: 2
                     including:
-                        1. outflow
-                        2. inflow
-                # the target station's inflow and outflow is in (5, 4) grid
-                # not done yet
+                        1. start
+                        2. end
                 """
-                labels.append(flow_data[t, station_idx, :, 5, 4])
+                labels.append(label_data[t, station_idx, :])
 
         for i in range(short_term_lstm_seq_len):
             cnn_features[i] = np.array(cnn_features[i])
