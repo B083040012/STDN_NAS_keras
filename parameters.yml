@@ -7,6 +7,8 @@ file:
   flow_test: "./data/sagan_pre/bike_flow_test.npy"
   weather_test: "./data/sagan_pre/weather_test.npy"
   poi_data: "./data/sagan_pre/bike_poi.npy"
+  label_train: "./data/sagan_pre/label_train.npy"
+  label_test: "./data/sagan_pre/label_test.npy"
 training:
   # size of batch
   batch_size: 64
@@ -25,12 +27,14 @@ dataset:
   nbhd_size: 2
   # dimension of local conv output
   cnn_flat_size: 128
-  threshold: 10
+  threshold: 15
   # not sure
-  volume_train_max: 299.0
-  volume_test_max: 307.0
-  flow_train_max: 61.0
-  flow_test_max: 59.0
+  volume_train_max: 283.0
+  volume_test_max: 263.0
+  flow_train_max: 137.0
+  flow_test_max: 153.0
+  label_train_max: 50.0
+  label_test_max: 50.0
   timeslot_sec: 1800
   hist_feature_daynum: 7
   last_feature_num: 48
@@ -38,20 +42,20 @@ dataset:
   # date: (start)~(end-1), hour: (start)~(end-1)
   # current date: 0 ~ 40
   # current time: 0 ~ 48
-  start_date_train: 39
+  start_date_train: 0
   end_date_train: 40
-  start_hour_train: 18
-  end_hour_train: 36
+  start_hour_train: 0
+  end_hour_train: 48
   # testing data time
   # date: (start)~(end-1), hour: (start)~(end-1)
   # current date: 0 ~ 20
   # current time: 0 ~ 48
-  start_date_test: 19
+  start_date_test: 0
   end_date_test: 20
   start_hour_test: 0
   end_hour_test: 48
 searching:
-  generation_num: 1
+  generation_num: 20
   population_num: 15
   annealing_ratio: 0.9
   initial_tmp: 200
