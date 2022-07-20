@@ -88,7 +88,6 @@ class SAGAN_fileloader:
 
         # initialize dataset time interval
         time_start = (hist_feature_daynum + att_lstm_num) * self.timeslot_daynum + long_term_lstm_seq_len
-        time_end = volume_data.shape[0]
 
         time_range_list = sorted([hour + date*48 for hour in range(self.start_hour, self.end_hour) \
             for date in range(self.start_date, self.end_date) if hour + date*48 >= time_start])
