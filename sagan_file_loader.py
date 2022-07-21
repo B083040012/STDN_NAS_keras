@@ -1,3 +1,4 @@
+from cProfile import label
 import numpy as np
 import yaml, random
 
@@ -51,6 +52,7 @@ class SAGAN_fileloader:
             weather_data = self.weather_train
             poi_data = self.poi_data
             label_data = self.label_train
+            lstm_feature_size = 5
         elif datatype == "validation" or "test":
             self.load_test()
             volume_data = self.volume_test
@@ -58,6 +60,7 @@ class SAGAN_fileloader:
             weather_data = self.weather_test
             poi_data = self.poi_data
             label_data = self.label_test
+            lstm_feature_size = 3
         else:
             print("Please select 'train', 'validation', or 'test'")
             raise Exception
@@ -98,6 +101,10 @@ class SAGAN_fileloader:
         if datatype == 'validation':
             time_range_list = sorted(random.sample(time_range_list, int(len(time_range_list) * 0.2)))
 
+        center_grid = (volume_data.shape[3] - 1) / 2
+        size_start = int(center_grid - ((lstm_feature_size - 1) / 2))
+        size_end = int(center_grid + ((lstm_feature_size - 1) / 2) + 1)
+
         # list all features
         print("time interval length: {0}".format(len(time_range_list)))
         for index, t in enumerate(time_range_list):
@@ -106,10 +113,10 @@ class SAGAN_fileloader:
             for station_idx in range(0, volume_data.shape[1]):
                 """
                 poi features
-                    size: 10*10*10
+                    size: grid_x * gird_y * poi_type
                     # since the poi features have identical timeslot for each station, short and long term all have same poi_features
                 """
-                poi_features.append(poi_data[station_idx])
+                poi_features.append(poi_data[station_idx, :, :, 0:6])
 
                 """
                 short-term features
@@ -189,23 +196,32 @@ class SAGAN_fileloader:
                             8~23. one hot encoding for ten weather type
                     """
                     # volume feature
-                    nbhd_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
-                    nbhd_feature[:, :, 0] = volume_data[real_t, station_idx, 0, :, :]
-                    nbhd_feature[:, :, 1] = volume_data[real_t, station_idx, 1, :, :]
+                    # nbhd_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                    nbhd_feature = np.zeros((lstm_feature_size, lstm_feature_size, volume_data.shape[2]))
+                    nbhd_feature[:, :, 0] = volume_data[real_t, station_idx, 0, size_start:size_end, size_start:size_end]
+                    nbhd_feature[:, :, 1] = volume_data[real_t, station_idx, 1, size_start:size_end, size_start:size_end]
                     nbhd_feature = nbhd_feature.flatten()
                     
                     # last feature
-                    last_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
-                    last_feature[:, :, 0] = volume_data[real_t - last_feature_num, station_idx, 0, :, :]
-                    last_feature[:, :, 1] = volume_data[real_t - last_feature_num, station_idx, 1, :, :]
+                    # last_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                    # last_feature = np.zeros((lstm_feature_size, lstm_feature_size, volume_data.shape[2]))
+                    # last_feature[:, :, 0] = volume_data[real_t - last_feature_num, station_idx, 0, size_start:size_end, size_start:size_end]
+                    # last_feature[:, :, 1] = volume_data[real_t - last_feature_num, station_idx, 1, size_start:size_end, size_start:size_end]
+                    last_feature = np.zeros((last_feature_num, volume_data.shape[2]))
+                    last_feature[:, 0] = label_data[real_t - last_feature_num: real_t, station_idx, 0]
+                    last_feature[:, 1] = label_data[real_t - last_feature_num: real_t, station_idx, 1]
                     last_feature = last_feature.flatten()
 
                     # hist feature
-                    hist_feature = np.zeros((7, volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
-                    hist_feature[:, :, :, 0] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
-                        station_idx, 0, :, :]
-                    hist_feature[:, :, :, 1] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
-                        station_idx, 1, :, :]
+                    # hist_feature = np.zeros((7, volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                    # hist_feature = np.zeros((7, lstm_feature_size, lstm_feature_size, volume_data.shape[2]))
+                    # hist_feature[:, :, :, 0] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
+                    #     station_idx, 0, size_start:size_end, size_start:size_end]
+                    # hist_feature[:, :, :, 1] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
+                    #     station_idx, 1, size_start:size_end, size_start:size_end]
+                    hist_feature = np.zeros((hist_feature_daynum, volume_data.shape[2]))
+                    hist_feature[:, 0] = label_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum, station_idx, 0]
+                    hist_feature[:, 1] = label_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum, station_idx, 1]
                     hist_feature = hist_feature.flatten()
 
                     feature_vec = np.concatenate((hist_feature, last_feature))
@@ -309,25 +325,35 @@ class SAGAN_fileloader:
                                 7. precip
                                 8~23. one hot encoding for ten weather type
                         """
-
                         # volume feature
-                        nbhd_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
-                        nbhd_feature[:, :, 0] = volume_data[real_t, station_idx, 0, :, :]
-                        nbhd_feature[:, :, 1] = volume_data[real_t, station_idx, 1, :, :]
+                        # nbhd_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                        nbhd_feature = np.zeros((lstm_feature_size, lstm_feature_size, volume_data.shape[2]))
+                        nbhd_feature[:, :, 0] = volume_data[real_t, station_idx, 0, size_start:size_end, size_start:size_end]
+                        nbhd_feature[:, :, 1] = volume_data[real_t, station_idx, 1, size_start:size_end, size_start:size_end]
                         nbhd_feature = nbhd_feature.flatten()
 
                         # last feature
-                        last_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
-                        last_feature[:, :, 0] = volume_data[real_t - last_feature_num, station_idx, 0, :, :]
-                        last_feature[:, :, 1] = volume_data[real_t - last_feature_num, station_idx, 1, :, :]
+                        # last_feature = np.zeros((volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                        # last_feature = np.zeros((lstm_feature_size, lstm_feature_size, volume_data.shape[2]))
+                        # last_feature[:, :, 0] = volume_data[real_t - last_feature_num, station_idx, 0, size_start:size_end, size_start:size_end]
+                        # last_feature[:, :, 1] = volume_data[real_t - last_feature_num, station_idx, 1, size_start:size_end, size_start:size_end]
+                        # last_feature = last_feature.flatten()
+                        last_feature = np.zeros((last_feature_num, volume_data.shape[2]))
+                        last_feature[:, 0] = label_data[real_t - last_feature_num: real_t, station_idx, 0]
+                        last_feature[:, 1] = label_data[real_t - last_feature_num: real_t, station_idx, 1]
                         last_feature = last_feature.flatten()
 
                         # hist feature
-                        hist_feature = np.zeros((7, volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
-                        hist_feature[:, :, :, 0] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
-                            station_idx, 0, :, :]
-                        hist_feature[:, :, :, 1] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
-                            station_idx, 1, :, :]
+                        # hist_feature = np.zeros((7, volume_data.shape[3], volume_data.shape[4], volume_data.shape[2]))
+                        # hist_feature = np.zeros((7, lstm_feature_size, lstm_feature_size, volume_data.shape[2]))
+                        # hist_feature[:, :, :, 0] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
+                        #     station_idx, 0, size_start:size_end, size_start:size_end]
+                        # hist_feature[:, :, :, 1] = volume_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum,\
+                        #     station_idx, 1, size_start:size_end, size_start:size_end]
+                        hist_feature = np.zeros((hist_feature_daynum, volume_data.shape[2]))
+                        hist_feature[:, 0] = label_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum, station_idx, 0]
+                        hist_feature[:, 1] = label_data[real_t - hist_feature_daynum*self.timeslot_daynum: real_t: self.timeslot_daynum, station_idx, 1]
+                        hist_feature = hist_feature.flatten()
                         hist_feature = hist_feature.flatten()
 
                         feature_vec = np.concatenate((hist_feature, last_feature))
