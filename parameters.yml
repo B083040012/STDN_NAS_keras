@@ -42,10 +42,10 @@ dataset:
   # date: (start)~(end-1), hour: (start)~(end-1)
   # current date: 0 ~ 40
   # current time: 0 ~ 48
-  start_date_train: 0
+  start_date_train: 39
   end_date_train: 40
-  start_hour_train: 0
-  end_hour_train: 48
+  start_hour_train: 18
+  end_hour_train: 36
   # testing data time
   # date: (start)~(end-1), hour: (start)~(end-1)
   # current date: 0 ~ 20
