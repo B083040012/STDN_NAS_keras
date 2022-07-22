@@ -177,7 +177,7 @@ class ASAGA_Searcher():
             self.model.set_choice(architecture)
             y_pred = self.model.predict(val_loader)
             # denormalized
-            y_pred=y_pred*self.config["dataset"]["volume_test_max"]
+            y_pred=y_pred*self.config["dataset"]["label_train_max"]
             loss_rmse = eval_rmse(self.val_label, y_pred, self.threshold)
             architecture_loss.append(loss_rmse)
         # architecture_loss=np.array(architecture_loss)
