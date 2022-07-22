@@ -83,7 +83,7 @@ def supernet_training(batch_size=64, max_epochs=100, validation_split=0.2, early
     # print("y: ", y.shape)
 
     train_data = [att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, [short_lstm, ], short_weather, short_poi]
-    train_label = y
+    train_label = y / config["dataset"]["label_train_max"]
     print("Start training supernet with input shape {1} / {0}".format(short_lstm.shape, short_cnn[0].shape))
     logging.info("train data loading complete")
 
