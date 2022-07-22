@@ -63,7 +63,7 @@ def search():
 
     # loading model
     # model=keras.models.load_model(checkpoint_file)
-    # tf.config.run_functions_eagerly(True)
+    tf.config.run_functions_eagerly(True)
     # model=STDN_NAS(att_lstm_num=att_lstm_num, att_lstm_seq_len=long_term_lstm_seq_len, \
     #                         lstm_seq_len=len(short_cnn), feature_vec_len=short_lstm.shape[-1], \
     #                         cnn_flat_size=cnn_flat_size, nbhd_size=short_cnn[0].shape[1], nbhd_type=short_cnn[0].shape[-1])
