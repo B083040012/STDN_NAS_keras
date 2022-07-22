@@ -27,7 +27,7 @@ dataset:
   nbhd_size: 2
   # dimension of local conv output
   cnn_flat_size: 128
-  threshold: 15
+  threshold: 0
   # not sure
   volume_train_max: 283.0
   volume_test_max: 263.0
@@ -42,7 +42,7 @@ dataset:
   # date: (start)~(end-1), hour: (start)~(end-1)
   # current date: 0 ~ 40
   # current time: 0 ~ 48
-  start_date_train: 39
+  start_date_train: 0
   end_date_train: 40
   start_hour_train: 18
   end_hour_train: 36
@@ -52,8 +52,8 @@ dataset:
   # current time: 0 ~ 48
   start_date_test: 0
   end_date_test: 20
-  start_hour_test: 0
-  end_hour_test: 48
+  start_hour_test: 18
+  end_hour_test: 36
 searching:
   generation_num: 20
   population_num: 15
