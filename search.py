@@ -2,12 +2,18 @@ from models import STDN_NAS
 from ASAGA import ASAGA_Searcher
 from sagan_file_loader import SAGAN_fileloader
 from choice_block_model import SAGAN_Suprtnet_Subclass_model
+from tensorflow.python.keras import backend as K
 import yaml, logging, time, os, keras
 import numpy as np
 import tensorflow as tf
 
+from numba import cuda
+cuda.select_device(0)
+cuda.close()
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
+
+K.set_session(tf.compat.v1.Session(config=config))
 
 def search():
     # load yaml

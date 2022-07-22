@@ -1,6 +1,7 @@
 from re import sub
 import numpy as np
 from criterion import eval_rmse
+from tensorflow.python.keras import backend as K
 import math, random
 
 
@@ -180,5 +181,6 @@ class ASAGA_Searcher():
             y_pred=y_pred*self.config["dataset"]["label_train_max"]
             loss_rmse = eval_rmse(self.val_label, y_pred, self.threshold)
             architecture_loss.append(loss_rmse)
+            K.clear_session()
         # architecture_loss=np.array(architecture_loss)
         return architecture_loss
