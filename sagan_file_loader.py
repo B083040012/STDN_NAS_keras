@@ -60,7 +60,7 @@ class SAGAN_fileloader:
             weather_data = self.weather_test
             poi_data = self.poi_data
             label_data = self.label_test
-            lstm_feature_size = 3
+            lstm_feature_size = 5
         else:
             print("Please select 'train', 'validation', or 'test'")
             raise Exception
