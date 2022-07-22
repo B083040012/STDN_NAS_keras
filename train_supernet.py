@@ -2,8 +2,6 @@ import keras, logging, yaml, time
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras import backend as K
-from models import STDN_NAS
-from file_loader import STDN_fileloader
 from sagan_file_loader import SAGAN_fileloader
 from choice_block_model import SAGAN_Suprtnet_Subclass_model
 from numba import cuda

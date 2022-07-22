@@ -3,7 +3,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras import backend as K
 from models import STDN_Network
-from file_loader import STDN_fileloader
 from sagan_file_loader import SAGAN_fileloader
 from criterion import eval_together, eval_lstm
 config = tf.compat.v1.ConfigProto()
