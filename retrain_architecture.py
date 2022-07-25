@@ -38,6 +38,7 @@ class CustomStopper(keras.callbacks.EarlyStopping):
         if epoch > self.start_epoch:
             super().on_epoch_end(epoch, logs)
 
+
 def retrain_architecture(batch_size=64, max_epochs=100, validation_split=0.2, early_stop=EarlyStopping()):
 
     # load log file
@@ -83,10 +84,10 @@ def retrain_architecture(batch_size=64, max_epochs=100, validation_split=0.2, ea
     logging.info("train data loading complete")
 
     logging.info("loading architecture...")
-    filepath=config["file"]["path"] + 'retrained_best_weights'
-    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, \
-                            save_best_only=True, save_weights_only=True, \
-                            mode='auto')
+    # filepath=config["file"]["path"] + 'retrained_best_weights'
+    # checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, \
+    #                         save_best_only=True, save_weights_only=True, \
+    #                         mode='auto')
     # tf.config.run_functions_eagerly(True)
     searched_choice=np.load(open(config["file"]["path"]+"searched_choice_list.npy", "rb"), allow_pickle = True)
 
@@ -102,7 +103,7 @@ def retrain_architecture(batch_size=64, max_epochs=100, validation_split=0.2, ea
     model.fit( \
         x = att_cnn + att_flow + att_lstm + att_weather + short_cnn + short_flow + [short_lstm,] + [short_weather,] + [short_poi,], \
         y = train_label, \
-        batch_size=batch_size, validation_split=validation_split, epochs=max_epochs, callbacks=[early_stop, checkpoint])
+        batch_size=batch_size, validation_split=validation_split, epochs=max_epochs, callbacks=[early_stop])
     end=time.time()
     logging.info("retraining complete")
 
