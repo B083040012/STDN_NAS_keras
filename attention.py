@@ -23,6 +23,13 @@ class Attention(Layer):
             self.v = self.add_weight(name='query_vector', shape=(self.att_size, 1), initializer='zeros', trainable=True)
 
         super(Attention, self).build(input_shape)
+    
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'method': self.method
+        })
+        return config
 
     def call(self, inputs, mask=None):
         '''
