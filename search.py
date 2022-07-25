@@ -59,7 +59,7 @@ def search():
                                                                                               last_feature_num)
     val_loader = [att_cnn, att_flow, att_lstm, att_weather, short_cnn, short_flow, [short_lstm, ], short_weather, short_poi]
     # denormalized
-    val_label = y
+    val_label = y * config["dataset"]["label_train_max"]
 
     # loading model
     # model=keras.models.load_model(checkpoint_file)
