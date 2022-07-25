@@ -13,7 +13,7 @@ training:
   # size of batch
   batch_size: 64
   # maximum epochs
-  max_epochs: 50
+  max_epochs: 80
 dataset: 
   # num of day for attention (value P in paper)
   att_lstm_num: 3
