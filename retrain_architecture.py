@@ -109,7 +109,7 @@ def retrain_architecture(batch_size=64, max_epochs=100, validation_split=0.2, ea
 
     model.save_weights(config["file"]["path"]+"retrained_final_weights")
     logging.info("[Retrained Architecture Weight Saved]")
-    model.save(config["file"]["path"]+"retrained_final_model.hdf5")
+    model.save(config["file"]["path"]+"retrained_final_model.h5")
     logging.info("[Retrained Architecture Model Saved]")
     logging.info("[Retraining Architecture Phase End] : total time: {0} sec".format(end-start))
 
