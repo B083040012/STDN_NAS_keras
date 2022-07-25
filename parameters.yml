@@ -27,7 +27,7 @@ dataset:
   nbhd_size: 2
   # dimension of local conv output
   cnn_flat_size: 128
-  threshold: 0
+  threshold: 15
   # not sure
   volume_train_max: 283.0
   volume_test_max: 263.0
